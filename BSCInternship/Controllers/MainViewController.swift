@@ -13,12 +13,20 @@ class MainViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
     
     private let storage = DataStorage()
     
-    private let headerContainer: UIView = {
+    private let doneButton: UIBarButtonItem = {
+        let button = UIButton(type: .system)
+        button.setTitle("Готово", for: .normal)
+        button.addTarget(self, action: #selector(hideKeyboard), for: .touchUpInside)
+        let menuBarItem = UIBarButtonItem(customView: button)
+        return menuBarItem
+    }()
+    
+    private let bodyContainer: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-    
+
     private let titleTextField: UITextField = {
         let textField = UITextField()
         textField.font = UIFont.systemFont(ofSize: NumberConstants.titleTextFieldFontSize, weight: UIFont.Weight.bold)
@@ -28,20 +36,6 @@ class MainViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
         textField.adjustsFontSizeToFitWidth = true
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
-    }()
-    
-    private let doneButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
-        button.addTarget(self, action: #selector(hideKeyboard), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-    
-    private let bodyContainer: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
     }()
     
     private let nodeTextView: UITextView = {
@@ -59,6 +53,7 @@ class MainViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
+        setNavigationBar()
         setConstraints()
         setupDelegate()
         registerDidEnterBackgroundNotification()
@@ -78,12 +73,14 @@ class MainViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
         NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
     }
     
+    private func setNavigationBar() {
+        navigationItem.rightBarButtonItem = doneButton
+    }
+    
     private func setupViews() {
         view.backgroundColor = .white
-        view.addSubview(headerContainer)
-        headerContainer.addSubview(titleTextField)
-        headerContainer.addSubview(doneButton)
         view.addSubview(bodyContainer)
+        bodyContainer.addSubview(titleTextField)
         bodyContainer.addSubview(nodeTextView)
     }
     
@@ -101,34 +98,20 @@ class MainViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
 extension MainViewController {
     private func setConstraints() {
         NSLayoutConstraint.activate([
-            headerContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: NumberConstants.headerContainerTopAnchor),
-            headerContainer.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            headerContainer.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            headerContainer.heightAnchor.constraint(equalToConstant: NumberConstants.headerContainerHeightAnchor)
-        ])
-        
-        NSLayoutConstraint.activate([
-            titleTextField.topAnchor.constraint(equalTo: headerContainer.topAnchor, constant: NumberConstants.titleTextFieldTopAnchor),
-            titleTextField.leadingAnchor.constraint(equalTo: headerContainer.leadingAnchor, constant: NumberConstants.titleTextFieldLeadingAnchor),
-            titleTextField.trailingAnchor.constraint(equalTo: doneButton.leadingAnchor,constant: NumberConstants.titleTextFieldTrailingAnchor)
-        ])
-        
-        NSLayoutConstraint.activate([
-            doneButton.topAnchor.constraint(equalTo: headerContainer.topAnchor, constant: NumberConstants.doneButtonTopAnchor),
-            doneButton.trailingAnchor.constraint(equalTo: headerContainer.trailingAnchor, constant: NumberConstants.doneButtonTrailingAnchor),
-            doneButton.widthAnchor.constraint(equalToConstant: NumberConstants.doneButtonWidthAnchor),
-            doneButton.heightAnchor.constraint(equalTo: titleTextField.heightAnchor)
-        ])
-        
-        NSLayoutConstraint.activate([
-            bodyContainer.topAnchor.constraint(equalTo: headerContainer.bottomAnchor),
-            bodyContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            bodyContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             bodyContainer.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            bodyContainer.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
+            bodyContainer.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            bodyContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
         
         NSLayoutConstraint.activate([
-            nodeTextView.topAnchor.constraint(equalTo: bodyContainer.topAnchor, constant: NumberConstants.nodeTextViewTopAnchor),
+            titleTextField.topAnchor.constraint(equalTo: bodyContainer.topAnchor, constant: NumberConstants.titleTextFieldTopAnchor),
+            titleTextField.leadingAnchor.constraint(equalTo: bodyContainer.leadingAnchor, constant: NumberConstants.titleTextFieldLeadingAnchor),
+            titleTextField.trailingAnchor.constraint(equalTo: bodyContainer.trailingAnchor,constant: NumberConstants.titleTextFieldTrailingAnchor)
+        ])
+            
+        NSLayoutConstraint.activate([
+            nodeTextView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: NumberConstants.nodeTextViewTopAnchor),
             nodeTextView.bottomAnchor.constraint(equalTo: bodyContainer.bottomAnchor, constant: NumberConstants.nodeTextViewBottomAnchor),
             nodeTextView.leadingAnchor.constraint(equalTo: bodyContainer.leadingAnchor, constant: NumberConstants.nodeTextViewLeadingAnchor),
             nodeTextView.trailingAnchor.constraint(equalTo: bodyContainer.trailingAnchor, constant: NumberConstants.nodeTextViewTrailingAnchor)
@@ -137,14 +120,9 @@ extension MainViewController {
     //MARK: - NumberConstants
     private struct NumberConstants {
         // Constraint constant
-        static let headerContainerTopAnchor: CGFloat = 5
-        static let headerContainerHeightAnchor: CGFloat = 45
         static let titleTextFieldTopAnchor: CGFloat = 5
         static let titleTextFieldLeadingAnchor: CGFloat = 5
         static let titleTextFieldTrailingAnchor: CGFloat = -10
-        static let doneButtonTopAnchor: CGFloat = 5
-        static let doneButtonTrailingAnchor: CGFloat = -5
-        static let doneButtonWidthAnchor: CGFloat = 100
         static let nodeTextViewTopAnchor: CGFloat = 5
         static let nodeTextViewBottomAnchor: CGFloat = -5
         static let nodeTextViewLeadingAnchor: CGFloat = 5
