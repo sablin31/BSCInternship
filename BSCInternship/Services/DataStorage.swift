@@ -13,7 +13,7 @@ class DataStorage {
     func load(key: String) -> String {
         return storage.string(forKey: key) ?? ""
     }
-    
+
     func save(data: String, key: String) {
         storage.set(data, forKey: key)
     }
