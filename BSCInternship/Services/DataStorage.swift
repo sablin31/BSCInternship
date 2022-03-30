@@ -10,8 +10,8 @@ import Foundation
 class DataStorage {
     private var storage = UserDefaults.standard
 
-    func load(key: String) -> String {
-        return storage.string(forKey: key) ?? ""
+    func load(key: String) -> String? {
+        return storage.string(forKey: key)
     }
 
     func save(data: String, key: String) {
