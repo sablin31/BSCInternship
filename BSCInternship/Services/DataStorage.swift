@@ -13,7 +13,7 @@ class DataStorage {
     func loadDate(key: String) -> NoteProtocol? {
         var note: NoteProtocol?
         // Read Data from UserDefaults
-        if let data = storage.data(forKey: "note") {
+        if let data = storage.data(forKey: key) {
             do {
                 // Create JSON Decoder
                 let decoder = JSONDecoder()
@@ -27,7 +27,7 @@ class DataStorage {
         return note
     }
 
-    func save(note: NoteProtocol, key: String) {
+    func save(note: NoteProtocol?, key: String) {
         guard let noteToRecord = note as? Note else { return }
         do {
             // Create JSON Encoder
@@ -37,7 +37,7 @@ class DataStorage {
             let data = try encoder.encode(noteToRecord)
 
             // Write Data to UserDefaults
-            storage.set(data, forKey: "note")
+            storage.set(data, forKey: key)
         } catch {
             print("Unable to Encode Note (\(error))")
         }

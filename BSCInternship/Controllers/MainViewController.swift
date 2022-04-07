@@ -19,9 +19,13 @@ class MainViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
         return view
     }()
 
+    // MARK: - UI Properties
     private let titleTextField: UITextField = {
         let textField = UITextField()
-        textField.font = UIFont.systemFont(ofSize: StringConstants.titleTextFieldFontSize, weight: UIFont.Weight.bold)
+        textField.font = UIFont.systemFont(
+            ofSize: StringConstants.titleTextFieldFontSize,
+            weight: UIFont.Weight.bold
+        )
         textField.borderStyle = .none
         textField.placeholder = StringConstants.titleTextFieldPlaceholder
         textField.textAlignment = .center
@@ -35,14 +39,17 @@ class MainViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
         datePicker.datePickerMode = .date
         datePicker.preferredDatePickerStyle = .wheels
         let localeID = Locale.preferredLanguages.first
-        datePicker.locale = Locale(identifier: localeID!)
+        datePicker.locale = Locale(identifier: localeID ?? "en")
         datePicker.translatesAutoresizingMaskIntoConstraints = false
         return datePicker
     }()
 
     private let dateTextField: UITextField = {
         let textField = UITextField()
-        textField.font = UIFont.systemFont(ofSize: StringConstants.dateTextFieldFontSize, weight: UIFont.Weight.regular)
+        textField.font = UIFont.systemFont(
+            ofSize: StringConstants.dateTextFieldFontSize,
+            weight: UIFont.Weight.regular
+        )
         textField.borderStyle = .none
         textField.textAlignment = .left
         textField.adjustsFontSizeToFitWidth = true
@@ -52,11 +59,15 @@ class MainViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
 
     private let noteTextView: UITextView = {
         let textView = UITextView()
-        textView.font = UIFont.systemFont(ofSize: StringConstants.noteTextViewFontSize, weight: UIFont.Weight.regular)
+        textView.font = UIFont.systemFont(
+            ofSize: StringConstants.noteTextViewFontSize,
+            weight: UIFont.Weight.regular
+        )
         textView.textAlignment = .left
         textView.translatesAutoresizingMaskIntoConstraints = false
         return textView
     }()
+
     // MARK: - Init
     deinit {
         removeDidEnterBackgroundNotification()
@@ -70,9 +81,9 @@ class MainViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
 
     @objc func checkNoteAndHideKeyboard() {
         view.endEditing(true)
-        let title = titleTextField.text == "" ? nil : titleTextField.text
-        let text = noteTextView.text == "" ? nil : noteTextView.text
-        let date = dateTextField.text == "" ? Date() : datePicker.date
+        let title = (titleTextField.text?.isEmpty ?? true) ? nil : titleTextField.text
+        let text = (noteTextView.text?.isEmpty ?? true) ? nil : noteTextView.text
+        let date = (dateTextField.text?.isEmpty ?? true) ? Date() : datePicker.date
         if currentNote == nil {
         currentNote = Note(
             title: title,
@@ -117,9 +128,14 @@ extension MainViewController {
         ])
 
         NSLayoutConstraint.activate([
-            dateTextField.topAnchor.constraint(
-                equalTo: titleTextField.bottomAnchor,
-                constant: ConstraintConstants.dataPickerTopAnchor
+            NSLayoutConstraint(
+                item: dateTextField,
+                attribute: .top,
+                relatedBy: .equal,
+                toItem: titleTextField,
+                attribute: .bottom,
+                multiplier: 1,
+                constant: ConstraintConstants.dataPickerVerticalSpacing
             ),
             dateTextField.leadingAnchor.constraint(
                 equalTo: bodyContainer.leadingAnchor,
@@ -132,13 +148,14 @@ extension MainViewController {
         ])
 
         NSLayoutConstraint.activate([
-            noteTextView.topAnchor.constraint(
-                equalTo: dateTextField.bottomAnchor,
-                constant: ConstraintConstants.noteTextViewTopAnchor
-            ),
-            noteTextView.bottomAnchor.constraint(
-                equalTo: bodyContainer.bottomAnchor,
-                constant: ConstraintConstants.noteTextViewBottomAnchor
+            NSLayoutConstraint(
+                item: noteTextView,
+                attribute: .top,
+                relatedBy: .equal,
+                toItem: dateTextField,
+                attribute: .bottom,
+                multiplier: 1,
+                constant: ConstraintConstants.noteTextViewVerticalSpacing
             ),
             noteTextView.leadingAnchor.constraint(
                 equalTo: bodyContainer.leadingAnchor,
@@ -147,6 +164,10 @@ extension MainViewController {
             noteTextView.trailingAnchor.constraint(
                 equalTo: bodyContainer.trailingAnchor,
                 constant: ConstraintConstants.noteTextViewTrailingAnchor
+            ),
+            noteTextView.bottomAnchor.constraint(
+                equalTo: bodyContainer.bottomAnchor,
+                constant: ConstraintConstants.noteTextViewBottomAnchor
             )
         ])
     }
@@ -157,25 +178,13 @@ extension MainViewController {
         static let titleTextFieldTopAnchor: CGFloat = 5
         static let titleTextFieldLeadingAnchor: CGFloat = 5
         static let titleTextFieldTrailingAnchor: CGFloat = -5
-        static let dataPickerTopAnchor: CGFloat = 10
+        static let dataPickerVerticalSpacing: CGFloat = 10
         static let dataPickerLeadingAnchor: CGFloat = 10
         static let dataPickerTrailingAnchor: CGFloat = -5
-        static let noteTextViewTopAnchor: CGFloat = 10
+        static let noteTextViewVerticalSpacing: CGFloat = 10
         static let noteTextViewBottomAnchor: CGFloat = -5
         static let noteTextViewLeadingAnchor: CGFloat = 5
         static let noteTextViewTrailingAnchor: CGFloat = -5
-    }
-}
-// MARK: - String constants
-extension MainViewController {
-    private enum StringConstants {
-        // String constants
-        static let titleTextFieldPlaceholder = "Введите заголовок"
-        static let doneButtonNavigationBarTitle = "Готово"
-        // Font constants
-        static let titleTextFieldFontSize: CGFloat = 22.0
-        static let dateTextFieldFontSize: CGFloat = 14.0
-        static let noteTextViewFontSize: CGFloat = 14.0
     }
 }
 // MARK: - Private Methods
@@ -185,9 +194,9 @@ extension MainViewController {
         setNavigationBar()
         setConstraints()
         setupDelegate()
-        if let note = storage.loadDate(key: "note") {
+        if let note = storage.loadDate(key: StringConstants.keyDataStorage) {
             currentNote = note
-            if !(currentNote!.isEmpty) {
+            if (currentNote?.isEmpty ?? true) == false {
                 titleTextField.text = note.title
                 dateTextField.text = getDataToString(note.date)
                 noteTextView.text = note.text
@@ -200,6 +209,9 @@ extension MainViewController {
         datePicker.addTarget(self, action: #selector(dataChanged), for: .valueChanged)
         dateTextField.placeholder = getDataToString(Date())
         dateTextField.inputView = datePicker
+        titleTextField.autocorrectionType = .no
+        dateTextField.autocorrectionType = .no
+        noteTextView.autocorrectionType = .no
         noteTextView.becomeFirstResponder()
     }
 
@@ -210,15 +222,19 @@ extension MainViewController {
             queue: nil
         ) { _ in
             if self.currentNote != nil {
-                if !self.currentNote!.isEmpty {
-                    self.storage.save(note: self.currentNote!, key: "note")
+                if (self.currentNote?.isEmpty ?? true) == false {
+                    self.storage.save(note: self.currentNote, key: StringConstants.keyDataStorage)
                 }
             }
         }
     }
 
     private func removeDidEnterBackgroundNotification() {
-        NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.removeObserver(
+            self,
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
     }
 
     private func setNavigationBar() {
@@ -242,27 +258,31 @@ extension MainViewController {
 
     private func setupDelegate() {
         self.titleTextField.delegate = self
+        self.dateTextField.delegate = self
         self.noteTextView.delegate = self
     }
 
     private func getDataToString(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "Дата: dd MMMM yyyy"
+        formatter.dateFormat = StringConstants.dateFormat
         return formatter.string(from: date)
     }
 
     private func checkEmptyNote(_ note: NoteProtocol?) {
         if note != nil {
-            if note!.isEmpty {
+            if note?.isEmpty ?? true {
                 // Create a new alert
                 let dialogMessage = UIAlertController(
-                    title: "Предупреждение",
-                    message: "Оба поля заметки не могут быть пустыми",
+                    title: StringConstants.titleAlert,
+                    message: StringConstants.messageAlert ,
                     preferredStyle: .alert
                 )
 
                 // Create OK button with action handler
-                let okButton = UIAlertAction(title: "OK", style: .default)
+                let okButton = UIAlertAction(
+                    title: StringConstants.titleOkButtonAlert,
+                    style: .default
+                )
 
                 // Add OK button to a dialog message
                 dialogMessage.addAction(okButton)
@@ -270,5 +290,23 @@ extension MainViewController {
                 self.present(dialogMessage, animated: true, completion: nil)
             }
         }
+    }
+}
+// MARK: - String constants
+extension MainViewController {
+    private enum StringConstants {
+        // String constants
+        static let titleTextFieldPlaceholder = "Введите заголовок"
+        static let doneButtonNavigationBarTitle = "Готово"
+        static let dateFormat = "Дата: dd MMMM yyyy"
+        static let titleAlert = "Предупреждение"
+        static let messageAlert = "Оба поля заметки не могут быть пустыми"
+        static let titleOkButtonAlert = "OK"
+        // Font constants
+        static let titleTextFieldFontSize: CGFloat = 22.0
+        static let dateTextFieldFontSize: CGFloat = 14.0
+        static let noteTextViewFontSize: CGFloat = 14.0
+        // Keys for DataStorage
+        static let keyDataStorage = "note"
     }
 }
