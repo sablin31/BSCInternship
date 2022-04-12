@@ -7,26 +7,40 @@
 
 import Foundation
 
-// MARK: - Protocol model
+// MARK: - Protocol models
 
-protocol NoteProtocol {
+protocol NoteDelegate: AnyObject {
+    func updateData(data: NoteProtocol)
+}
+// MARK: - Protocol delegate
+
+protocol NoteProtocol: NoteDelegate {
     // MARK: Public Properties
 
     var title: String? { get set }
     var text: String? { get set }
     var date: Date { get set }
-    var isEmpty: Bool { get }
 }
+// MARK: - Object model
 
-// MARK: - Struct model
-
-struct Note: NoteProtocol, Codable {
+class Note: NoteProtocol, NoteDelegate {
     // MARK: Public Properties
 
     var title: String?
     var text: String?
     var date: Date
-    var isEmpty: Bool {
-        return title == nil && text == nil
+
+    // MARK: Init
+
+    init() {
+        date = Date()
+    }
+
+    // MARK: Delegate method
+
+    func updateData(data: NoteProtocol) {
+        title = data.title
+        text = data.text
+        date = data.date
     }
 }
