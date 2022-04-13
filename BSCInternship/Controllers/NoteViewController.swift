@@ -7,18 +7,27 @@
 
 import UIKit
 
-class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate {
+// MARK: - ListViewController (SecondView Controller)
+
+class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate, ListViewControllerDelegate {
     // MARK: - Proterties
 
-    var completionHandler: ((NoteProtocol) -> Void)?
     var currentNote: NoteProtocol?
-    var indexNoteOnArray: Int?
+    var currentModel: [NoteProtocol]?
+    var editMode = false
     // MARK: - UI Properties
 
     private let backgroundView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
+    }()
+
+    private let scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        return scrollView
     }()
 
     private let dateLabel: UILabel = {
@@ -45,31 +54,67 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
         let textView = UITextView()
         textView.font = Constants.noteTextViewFont
         textView.textAlignment = .left
+        textView.showsVerticalScrollIndicator = false
         textView.translatesAutoresizingMaskIntoConstraints = false
         return textView
     }()
 
+    private lazy var backButtonNavigationBar: UIBarButtonItem = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: Constants.backButtonNavigationBarImageSystemName), for: .normal)
+        button.addTarget(self, action: #selector(leftBarButtonAction), for: .touchUpInside)
+        let menuBarItem = UIBarButtonItem(customView: button)
+        return menuBarItem
+    }()
+
+    private lazy var doneButtonNavigationBar: UIBarButtonItem = {
+        let button = UIButton(type: .system)
+        button.setTitle(Constants.doneButtonNavigationBarTitle, for: .normal)
+        button.addTarget(self, action: #selector(rightBarButtonAction), for: .touchUpInside)
+        let menuBarItem = UIBarButtonItem(customView: button)
+        return menuBarItem
+    }()
+    // MARK: - Init
+
+    deinit {
+        removeKeyboardNotification()
+    }
     // MARK: - Inheritance
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = Constants.backgroundColor
         configureUI()
+        registerKeyboardNotification()
+    }
+    // MARK: - Delegate methods
+
+    func setCurrentModel(_ model: [NoteProtocol]?) {
+        currentModel = model
     }
 
-    @objc func checkNoteAndHideKeyboard() {
+    func getUpdateModel() -> [NoteProtocol]? {
+        return currentModel
+    }
+    // MARK: - Actions methods
+
+    @objc func leftBarButtonAction() {
+        let title = (titleTextField.text?.isEmpty ?? true) ? nil : titleTextField.text
+        let text = (noteTextView.text?.isEmpty ?? true) ? nil : noteTextView.text
+        if title != nil || text != nil {
+            updateModel(title: title, text: text)
+        }
+        self.navigationController?.popViewController(animated: true)
+    }
+
+    @objc func rightBarButtonAction() {
         view.endEditing(true)
         let title = (titleTextField.text?.isEmpty ?? true) ? nil : titleTextField.text
         let text = (noteTextView.text?.isEmpty ?? true) ? nil : noteTextView.text
         if title == nil, text == nil {
             showAlert()
         } else {
-            currentNote?.date = Date()
-            currentNote?.title = title
-            currentNote?.text = text
-            if let currentNote = currentNote {
-                completionHandler?(currentNote)
-            }
-            // navigationController?.popViewController(animated: true)
+            updateModel(title: title, text: text)
         }
     }
 }
@@ -82,25 +127,21 @@ extension NoteViewController {
         setConstraints()
         setupDelegate()
 
-        dateLabel.text = currentNote?.date.toString(dateFormat: Constants.dateFormat)
+        dateLabel.text = currentNote?.date.toString(
+            dateFormat: Constants.dateFormat
+        ) ?? Date().toString(
+            dateFormat: Constants.dateFormat
+        )
         titleTextField.text = currentNote?.title
         noteTextView.text = currentNote?.text
 
         titleTextField.autocorrectionType = .no
         noteTextView.autocorrectionType = .no
-        noteTextView.becomeFirstResponder()
+        if currentNote == nil { noteTextView.becomeFirstResponder() }
     }
 
     private func setNavigationBar() {
-        let doneButtonNavigationBar: UIBarButtonItem = {
-            let button = UIButton(type: .system)
-            button.setTitle(Constants.doneButtonNavigationBarTitle, for: .normal)
-            button.addTarget(self, action: #selector(checkNoteAndHideKeyboard), for: .touchUpInside)
-            // button.isHidden = true
-            let menuBarItem = UIBarButtonItem(customView: button)
-            return menuBarItem
-        }()
-        navigationItem.rightBarButtonItem = doneButtonNavigationBar
+        navigationItem.leftBarButtonItem = backButtonNavigationBar
     }
 
     private func setupViews() {
@@ -108,7 +149,8 @@ extension NoteViewController {
         view.addSubview(backgroundView)
         backgroundView.addSubview(dateLabel)
         backgroundView.addSubview(titleTextField)
-        backgroundView.addSubview(noteTextView)
+        backgroundView.addSubview(scrollView)
+        scrollView.addSubview(noteTextView)
     }
 
     private func setupDelegate() {
@@ -116,7 +158,25 @@ extension NoteViewController {
         self.noteTextView.delegate = self
     }
 
-    // MARK: SetConstraints
+    private func updateModel(title: String?, text: String?) {
+        if self.currentNote == nil {
+            self.currentNote = Note(title: title, text: text)
+            if let currentNote = self.currentNote {
+                if self.currentModel != nil {
+                    self.currentModel?.append(currentNote)
+                } else {
+                    self.currentModel = [currentNote]
+                }
+            }
+        } else {
+            self.currentNote?.date = Date()
+            self.currentNote?.title = title
+            self.currentNote?.text = text
+        }
+    }
+
+    // MARK: Set constraint
+
     private func setConstraints() {
         if #available(iOS 11, *) {
             let guide = view.safeAreaLayoutGuide
@@ -138,55 +198,62 @@ extension NoteViewController {
         NSLayoutConstraint.activate([
             dateLabel.topAnchor.constraint(
                 equalTo: backgroundView.topAnchor,
-                constant: 12
+                constant: Constants.dataLabelTopAnchor
             ),
             dateLabel.leadingAnchor.constraint(
                 equalTo: backgroundView.leadingAnchor,
-                constant: 20
+                constant: Constants.dataLabelLeadingAnchor
             ),
             dateLabel.trailingAnchor.constraint(
                 equalTo: backgroundView.trailingAnchor,
-                constant: -20
+                constant: Constants.dataLabelTrailingAnchor
             )
         ])
 
         NSLayoutConstraint.activate([
             titleTextField.topAnchor.constraint(
                 equalTo: dateLabel.bottomAnchor,
-                constant: 20
+                constant: Constants.titleTextFieldTopAnchor
             ),
             titleTextField.leadingAnchor.constraint(
                 equalTo: backgroundView.leadingAnchor,
-                constant: 20
+                constant: Constants.titleTextFieldLeadingAnchor
             ),
             titleTextField.trailingAnchor.constraint(
                 equalTo: backgroundView.trailingAnchor,
-                constant: -20
+                constant: Constants.titleTextFieldTrailingAnchor
             )
         ])
 
         NSLayoutConstraint.activate([
             NSLayoutConstraint(
-                item: noteTextView,
+                item: scrollView,
                 attribute: .top,
                 relatedBy: .equal,
                 toItem: titleTextField,
                 attribute: .bottom,
                 multiplier: 1,
-                constant: Constants.noteTextViewVerticalSpacing
+                constant: Constants.scrollViewVerticalSpacing
             ),
-            noteTextView.leadingAnchor.constraint(
+            scrollView.leadingAnchor.constraint(
                 equalTo: backgroundView.leadingAnchor,
-                constant: Constants.noteTextViewLeadingAnchor
+                constant: Constants.scrollViewLeadingAnchor
             ),
-            noteTextView.trailingAnchor.constraint(
+            scrollView.trailingAnchor.constraint(
                 equalTo: backgroundView.trailingAnchor,
-                constant: Constants.noteTextViewTrailingAnchor
+                constant: Constants.scrollViewTrailingAnchor
             ),
-            noteTextView.bottomAnchor.constraint(
+            scrollView.bottomAnchor.constraint(
                 equalTo: backgroundView.bottomAnchor,
-                constant: Constants.noteTextViewBottomAnchor
+                constant: Constants.scrollViewBottomAnchor
             )
+        ])
+
+        NSLayoutConstraint.activate([
+            noteTextView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            noteTextView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            noteTextView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            noteTextView.heightAnchor.constraint(equalTo: scrollView.heightAnchor)
         ])
     }
 
@@ -212,7 +279,11 @@ extension NoteViewController {
     private enum Constants {
         // MARK: UI Properties constants
 
+        static let backgroundColor = UIColor(red: 0.976, green: 0.98, blue: 0.996, alpha: 1)
+
+        static let backButtonNavigationBarImageSystemName = "chevron.backward"
         static let doneButtonNavigationBarTitle = "Готово"
+
         static let dateFormat = "dd.MM.yyyy EEEE HH:mm"
 
         static let dateLabelFrame = CGRect(x: 0, y: 0, width: 130, height: 22)
@@ -230,15 +301,67 @@ extension NoteViewController {
 
         // MARK: Constraint constants
 
-        static let titleTextFieldTopAnchor: CGFloat = 5
-        static let titleTextFieldLeadingAnchor: CGFloat = 5
-        static let titleTextFieldTrailingAnchor: CGFloat = -5
-        static let dataPickerVerticalSpacing: CGFloat = 10
-        static let dataPickerLeadingAnchor: CGFloat = 10
-        static let dataPickerTrailingAnchor: CGFloat = -5
-        static let noteTextViewVerticalSpacing: CGFloat = 28
-        static let noteTextViewBottomAnchor: CGFloat = -20
-        static let noteTextViewLeadingAnchor: CGFloat = 20
-        static let noteTextViewTrailingAnchor: CGFloat = -20
+        static let dataLabelTopAnchor: CGFloat = 12
+        static let dataLabelLeadingAnchor: CGFloat = 20
+        static let dataLabelTrailingAnchor: CGFloat = -20
+
+        static let titleTextFieldTopAnchor: CGFloat = 20
+        static let titleTextFieldLeadingAnchor: CGFloat = 20
+        static let titleTextFieldTrailingAnchor: CGFloat = -20
+
+        static let scrollViewVerticalSpacing: CGFloat = 28
+        static let scrollViewLeadingAnchor: CGFloat = 20
+        static let scrollViewTrailingAnchor: CGFloat = -20
+        static let scrollViewBottomAnchor: CGFloat = -20
+    }
+}
+// MARK: - Keyboard show/hide notification
+
+extension NoteViewController {
+    private func registerKeyboardNotification() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+
+    private func removeKeyboardNotification() {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+
+    @objc private func keyboardWillShow(notification: Notification) {
+        editMode = true
+        navigationItem.rightBarButtonItem = doneButtonNavigationBar
+        guard let keyboardValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else {
+            return
+        }
+
+        let keyboardScreenEndFrame = keyboardValue.cgRectValue
+        let keyboardViewEndFrame = noteTextView.convert(keyboardScreenEndFrame, from: noteTextView.window)
+
+        noteTextView.contentInset = UIEdgeInsets(
+            top: 0,
+            left: 0,
+            bottom: keyboardViewEndFrame.height - noteTextView.safeAreaInsets.bottom,
+            right: 0
+        )
+    }
+
+    @objc private func keyboardWillHide(notification: Notification) {
+        editMode = false
+        noteTextView.contentInset = .zero
+        let newPosition = noteTextView.beginningOfDocument
+        noteTextView.selectedTextRange = noteTextView.textRange(from: newPosition, to: newPosition)
+        navigationItem.rightBarButtonItem = nil
     }
 }

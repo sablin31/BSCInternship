@@ -9,8 +9,8 @@ import UIKit
 
 class NoteView: UIView {
     // MARK: - Properties
-    var note: NoteProtocol
 
+    var note: NoteProtocol
     // MARK: - UI Properties
 
     private let titleLabel: UILabel = {
@@ -57,15 +57,11 @@ class NoteView: UIView {
 // MARK: - Private methods
 
 extension NoteView {
-    // MARK: Configure view
-
     private func configureView() {
         self.addSubview(titleLabel)
         self.addSubview(textLabel)
         self.addSubview(dateLabel)
     }
-
-    // MARK: Set constraints
 
     private func setConstraints() {
         NSLayoutConstraint.activate([

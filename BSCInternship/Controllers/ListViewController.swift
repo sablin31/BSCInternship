@@ -6,15 +6,24 @@
 //
 
 import UIKit
-// MARK: - ListViewController (Main Controller)
+
+// MARK: - Protocol delegate
+
+protocol ListViewControllerDelegate: AnyObject {
+    func setCurrentModel(_ model: [NoteProtocol]?)
+    func getUpdateModel() -> [NoteProtocol]?
+}
+// MARK: - ListViewController (RootView Controller)
 
 class ListViewController: UIViewController {
     // MARK: - Public proterties
 
-    weak var delegate: NoteDelegate?
+    weak var delegate: ListViewControllerDelegate?
     var notes: [NoteProtocol]?
+    var noteViews: [NoteView] = []
     // MARK: - Private proterties
 
+    private let screenWidth = UIScreen.main.bounds.width
     private let storage = DataStorage()
     // MARK: - UI Properties
 
@@ -36,6 +45,7 @@ class ListViewController: UIViewController {
 
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
+        scrollView.isScrollEnabled = true
         scrollView.showsVerticalScrollIndicator = false
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         return scrollView
@@ -53,41 +63,33 @@ class ListViewController: UIViewController {
         return button
     }()
 
-    // MARK: Actions methods
+    // MARK: - Actions methods
 
     @objc func createNewNote() {
         let newNoteViewController = NoteViewController()
-        newNoteViewController.currentNote = Note()
-        newNoteViewController.completionHandler = { [unowned self] newNote in
-            if self.notes != nil {
-                self.notes?.append(newNote)
-            } else {
-                self.notes = [NoteProtocol]()
-                notes?.append(newNote)
-            }
-            addNoteViewInStack(noteView: NoteView(note: newNote), tag: (notes?.count ?? 1) - 1, in: stackView)
-        }
+        delegate = newNoteViewController
+        delegate?.setCurrentModel(notes)
         self.navigationController?.pushViewController(newNoteViewController, animated: true)
     }
 
     @objc func handleTap(_ sender: UITapGestureRecognizer? = nil) {
-        guard let numberOfNote = sender?.view?.tag else { return }
-        if notes != nil, numberOfNote >= 0 && numberOfNote < notes?.count ?? 0 {
-            let selectedNote = notes?[numberOfNote]
-            delegate = selectedNote.self
-            let currentNoteViewControler = NoteViewController()
-            currentNoteViewControler.currentNote = selectedNote
-            currentNoteViewControler.completionHandler = { [unowned self] modifiedNote in
-                delegate?.updateData(data: modifiedNote)
-                for item in 0..<(stackView.arrangedSubviews.count) {
-                    let currentNoteView = stackView.arrangedSubviews[item] as? NoteView
-                    if currentNoteView?.note === selectedNote {
-                        currentNoteView?.updateView()
-                    }
-                }
+        guard let currentNoteView = sender?.view as? NoteView else { return }
+
+        let currentNoteViewControler = NoteViewController()
+        delegate = currentNoteViewControler
+
+        let currentNote = currentNoteView.note
+        // Определение заметки которая была выбрана
+        if let selectedNote = notes?.first(
+            where: {
+                $0 as? Note === currentNote as? Note
             }
-            self.navigationController?.pushViewController(currentNoteViewControler, animated: true)
+        ) {
+            // Передача выбранной заметки во 2-ю вью
+            currentNoteViewControler.currentNote = selectedNote
+            delegate?.setCurrentModel(notes)
         }
+        self.navigationController?.pushViewController(currentNoteViewControler, animated: true)
     }
     // MARK: - Init
 
@@ -103,6 +105,17 @@ class ListViewController: UIViewController {
         configureUI()
         registerDidEnterBackgroundNotification()
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        let updateModel = delegate?.getUpdateModel()
+        if updateModel != nil {
+            self.notes = updateModel
+            updateStackView()
+            stackView.layoutIfNeeded()
+            scrollView.contentSize = CGSize(width: screenWidth, height: stackView.bounds.height)
+        }
+    }
 }
 // MARK: - Private methods
 
@@ -111,6 +124,11 @@ extension ListViewController {
 
     private func loadNotes() {
         self.notes = storage.loadDate(key: Constants.dataStorageKey)
+        if let notes = notes {
+            for note in notes {
+                noteViews.append(NoteView(note: note))
+            }
+        }
     }
 
     private func registerDidEnterBackgroundNotification() {
@@ -120,11 +138,8 @@ extension ListViewController {
             queue: nil
         ) { _ in
             if self.notes != nil {
-                if let notes1 = self.notes {
-                    for items in notes1 {
-                        print(items.title)
-                    }
-                    self.storage.save(notes: notes1, key: Constants.dataStorageKey)
+                if let notes = self.notes {
+                    self.storage.save(notes: notes, key: Constants.dataStorageKey)
                 }
             }
         }
@@ -147,8 +162,6 @@ extension ListViewController {
     }
 
     private func setupViews() {
-        let screenWidth = UIScreen.main.bounds.width
-
         view.addSubview(backgroundView)
         backgroundView.addSubview(scrollView)
         stackView = configureStackView()
@@ -164,21 +177,17 @@ extension ListViewController {
         stackView.alignment = .center
         stackView.spacing = Constants.stackViewSpacing
 
-        for item in 0..<(notes?.count ?? 0) {
-            if let currenNote = notes?[item] {
-                let currentNoteView = NoteView(note: currenNote)
-                addNoteViewInStack(noteView: currentNoteView, tag: item, in: stackView)
-            }
+        for noteView in noteViews {
+            addNoteViewInStack(noteView: noteView, in: stackView)
         }
 
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }
 
-    private func addNoteViewInStack(noteView: NoteView, tag: Int, in stack: UIStackView) {
+    private func addNoteViewInStack(noteView: NoteView, in stack: UIStackView) {
         let tap = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
         noteView.addGestureRecognizer(tap)
-        noteView.tag = tag
         stack.addArrangedSubview(noteView)
         NSLayoutConstraint.activate([
             noteView.heightAnchor.constraint(equalToConstant: Constants.stackViewContentHeight),
@@ -191,6 +200,30 @@ extension ListViewController {
                 constant: Constants.stackViewContentTrailingAnchor
             )
         ])
+    }
+
+    private func updateStackView() {
+        if let notes = notes {
+            for note in notes {
+                if self.noteViews.isEmpty == false {
+                    if let selectedNoteView = self.noteViews.first(
+                        where: {
+                            $0.note as? Note === note as? Note
+                        }
+                    ) {
+                        selectedNoteView.updateView()
+                    } else {
+                        let newNoteView = NoteView(note: note)
+                        self.noteViews.append(newNoteView)
+                        addNoteViewInStack(noteView: newNoteView, in: stackView)
+                    }
+                } else {
+                    let newNoteView = NoteView(note: note)
+                    self.noteViews = [newNoteView]
+                    addNoteViewInStack(noteView: newNoteView, in: stackView)
+                }
+            }
+        }
     }
 
     // MARK: Set constraint
