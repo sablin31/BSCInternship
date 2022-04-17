@@ -7,28 +7,24 @@
 
 import Foundation
 
-// MARK: - Protocol model
-
-protocol NoteProtocol: Decodable {
-    // MARK: - Public Properties
-
-    var title: String? { get set }
-    var text: String? { get set }
-    var date: Date { get set }
-}
 // MARK: - Struct model
 
-class Note: NoteProtocol, Codable {
+struct Note: Codable, Identifiable {
     // MARK: - Public Properties
 
+    var id = UUID()
     var title: String?
     var text: String?
     var date: Date
 
     // MARK: - Init
-    init(title: String?, text: String?) {
+    init(
+        title: String?,
+        text: String?,
+        date: Date = Date()
+    ) {
         self.title = title
         self.text = text
-        self.date = Date()
+        self.date = date
     }
 }

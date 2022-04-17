@@ -10,8 +10,8 @@ import UIKit
 // MARK: - Protocol delegate
 
 protocol ListViewControllerDelegate: AnyObject {
-    func setCurrentModel(_ model: [NoteProtocol]?)
-    func getUpdateModel() -> [NoteProtocol]?
+    func setCurrentModel(_ model: [Note])
+    func getUpdateModel() -> [Note]
 }
 // MARK: - ListViewController (RootView Controller)
 
@@ -19,7 +19,7 @@ class ListViewController: UIViewController {
     // MARK: - Public proterties
 
     weak var delegate: ListViewControllerDelegate?
-    var notes: [NoteProtocol]?
+    var notes: [Note] = []
     var noteViews: [NoteView] = []
     // MARK: - Private proterties
 
@@ -62,7 +62,6 @@ class ListViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-
     // MARK: - Actions methods
 
     @objc func createNewNote() {
@@ -80,9 +79,9 @@ class ListViewController: UIViewController {
 
         let currentNote = currentNoteView.note
         // Определение заметки которая была выбрана
-        if let selectedNote = notes?.first(
+        if let selectedNote = notes.first(
             where: {
-                $0 as? Note === currentNote as? Note
+                $0.id == currentNote?.id
             }
         ) {
             // Передача выбранной заметки во 2-ю вью
@@ -108,13 +107,11 @@ class ListViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        let updateModel = delegate?.getUpdateModel()
-        if updateModel != nil {
-            self.notes = updateModel
-            updateStackView()
-            stackView.layoutIfNeeded()
-            scrollView.contentSize = CGSize(width: screenWidth, height: stackView.bounds.height)
-        }
+        guard let updateModel = delegate?.getUpdateModel() else { return }
+        self.notes = updateModel
+        updateStackView()
+        stackView.layoutIfNeeded()
+        scrollView.contentSize = CGSize(width: screenWidth, height: stackView.bounds.height)
     }
 }
 // MARK: - Private methods
@@ -123,11 +120,11 @@ extension ListViewController {
     // MARK: Data storage methods
 
     private func loadNotes() {
-        self.notes = storage.loadDate(key: Constants.dataStorageKey)
-        if let notes = notes {
-            for note in notes {
-                noteViews.append(NoteView(note: note))
-            }
+        self.notes = storage.loadDate(key: Constants.dataStorageKey) ?? []
+        for note in notes {
+            let newNoteView = NoteView()
+            newNoteView.set(with: note)
+            noteViews.append(newNoteView)
         }
     }
 
@@ -137,11 +134,7 @@ extension ListViewController {
             object: nil,
             queue: nil
         ) { _ in
-            if self.notes != nil {
-                if let notes = self.notes {
-                    self.storage.save(notes: notes, key: Constants.dataStorageKey)
-                }
-            }
+            self.storage.save(notes: self.notes, key: Constants.dataStorageKey)
         }
     }
 
@@ -203,25 +196,18 @@ extension ListViewController {
     }
 
     private func updateStackView() {
-        if let notes = notes {
-            for note in notes {
-                if self.noteViews.isEmpty == false {
-                    if let selectedNoteView = self.noteViews.first(
-                        where: {
-                            $0.note as? Note === note as? Note
-                        }
-                    ) {
-                        selectedNoteView.updateView()
-                    } else {
-                        let newNoteView = NoteView(note: note)
-                        self.noteViews.append(newNoteView)
-                        addNoteViewInStack(noteView: newNoteView, in: stackView)
-                    }
-                } else {
-                    let newNoteView = NoteView(note: note)
-                    self.noteViews = [newNoteView]
-                    addNoteViewInStack(noteView: newNoteView, in: stackView)
+        for note in notes {
+            if let selectedNoteView = self.noteViews.first(
+                where: {
+                    $0.note?.id == note.id
                 }
+            ) {
+                selectedNoteView.set(with: note)
+            } else {
+                let newNoteView = NoteView()
+                newNoteView.set(with: note)
+                self.noteViews.append(newNoteView)
+                addNoteViewInStack(noteView: newNoteView, in: stackView)
             }
         }
     }

@@ -10,7 +10,7 @@ import UIKit
 class NoteView: UIView {
     // MARK: - Properties
 
-    var note: NoteProtocol
+    var note: Note?
     // MARK: - UI Properties
 
     private let titleLabel: UILabel = {
@@ -38,14 +38,8 @@ class NoteView: UIView {
     }()
     // MARK: - Init
 
-    init(note: NoteProtocol) {
-        self.note = note
-        super.init(frame: Constants.viewFrame)
-        self.layer.backgroundColor = Constants.viewBgColor
-        self.layer.cornerRadius = Constants.viewCornerRadius
-        self.titleLabel.text = self.note.title?.isEmpty ?? true ? "  " : self.note.title
-        self.dateLabel.text = self.note.date.toString(dateFormat: Constants.dateFormat)
-        self.textLabel.text = self.note.text
+    init() {
+        super.init(frame: .zero)
         self.configureView()
         self.setConstraints()
     }
@@ -53,14 +47,28 @@ class NoteView: UIView {
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    // MARK: - Public methods
+
+    func set(with note: Note?) {
+        self.note = note
+        updateView()
+    }
 }
 // MARK: - Private methods
 
 extension NoteView {
     private func configureView() {
+        self.layer.backgroundColor = Constants.viewBgColor
+        self.layer.cornerRadius = Constants.viewCornerRadius
         self.addSubview(titleLabel)
         self.addSubview(textLabel)
         self.addSubview(dateLabel)
+    }
+
+    func updateView() {
+        self.titleLabel.text = note?.title ?? " "
+        self.dateLabel.text = note?.date.toString(dateFormat: Constants.dateFormat)
+        self.textLabel.text = note?.text
     }
 
     private func setConstraints() {
@@ -109,12 +117,6 @@ extension NoteView {
             )
         ])
     }
-
-    func updateView() {
-        self.titleLabel.text = self.note.title
-        self.dateLabel.text = self.note.date.toString(dateFormat: Constants.dateFormat)
-        self.textLabel.text = self.note.text
-    }
 }
 // MARK: - Constants
 
@@ -137,7 +139,6 @@ extension NoteView {
         // MARK: UI Constant properties
 
         static let viewBgColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1).cgColor
-        static let viewFrame = CGRect(x: 0, y: 0, width: 358, height: 90)
         static let viewCornerRadius: CGFloat = 14
 
         static let titleLabelTextColor = UIColor(red: 0, green: 0, blue: 0, alpha: 1)

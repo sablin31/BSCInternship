@@ -12,8 +12,8 @@ import UIKit
 class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate, ListViewControllerDelegate {
     // MARK: - Proterties
 
-    var currentNote: NoteProtocol?
-    var currentModel: [NoteProtocol]?
+    var currentNote: Note?
+    var model: [Note] = []
     var editMode = false
     // MARK: - UI Properties
 
@@ -87,21 +87,47 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
         configureUI()
         registerKeyboardNotification()
     }
-    // MARK: - Delegate methods
 
-    func setCurrentModel(_ model: [NoteProtocol]?) {
-        currentModel = model
+    @objc override func keyboardWillShow(notification: Notification) {
+        self.editMode = true
+        navigationItem.rightBarButtonItem = doneButtonNavigationBar
+        guard let keyboardValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else {
+            return
+        }
+
+        let keyboardScreenEndFrame = keyboardValue.cgRectValue
+        let keyboardViewEndFrame = noteTextView.convert(keyboardScreenEndFrame, from: noteTextView.window)
+
+        noteTextView.contentInset = UIEdgeInsets(
+            top: 0,
+            left: 0,
+            bottom: keyboardViewEndFrame.height - noteTextView.safeAreaInsets.bottom,
+            right: 0
+        )
     }
 
-    func getUpdateModel() -> [NoteProtocol]? {
-        return currentModel
+    @objc override func keyboardWillHide(notification: Notification) {
+        self.editMode = false
+        noteTextView.contentInset = .zero
+        let newPosition = noteTextView.beginningOfDocument
+        noteTextView.selectedTextRange = noteTextView.textRange(from: newPosition, to: newPosition)
+        navigationItem.rightBarButtonItem = nil
+    }
+    // MARK: - Delegate methods
+
+    func setCurrentModel(_ model: [Note]) {
+        self.model = model
+    }
+
+    func getUpdateModel() -> [Note] {
+        return self.model
     }
     // MARK: - Actions methods
 
     @objc func leftBarButtonAction() {
         let title = (titleTextField.text?.isEmpty ?? true) ? nil : titleTextField.text
         let text = (noteTextView.text?.isEmpty ?? true) ? nil : noteTextView.text
-        if title != nil || text != nil {
+        if title != nil || text != nil && editMode {
             updateModel(title: title, text: text)
         }
         self.navigationController?.popViewController(animated: true)
@@ -159,19 +185,24 @@ extension NoteViewController {
     }
 
     private func updateModel(title: String?, text: String?) {
-        if self.currentNote == nil {
-            self.currentNote = Note(title: title, text: text)
-            if let currentNote = self.currentNote {
-                if self.currentModel != nil {
-                    self.currentModel?.append(currentNote)
-                } else {
-                    self.currentModel = [currentNote]
-                }
+        guard self.currentNote != nil else {
+            let newNote = Note(
+                title: title,
+                text: text
+            )
+            self.model.append(newNote)
+            self.currentNote = newNote
+            return
+        }
+
+        if let item = model.firstIndex(
+            where: {
+                $0.id == self.currentNote?.id
             }
-        } else {
-            self.currentNote?.date = Date()
-            self.currentNote?.title = title
-            self.currentNote?.text = text
+        ) {
+            self.model[item].title = title
+            self.model[item].text = text
+            self.model[item].date = Date()
         }
     }
 
@@ -313,55 +344,5 @@ extension NoteViewController {
         static let scrollViewLeadingAnchor: CGFloat = 20
         static let scrollViewTrailingAnchor: CGFloat = -20
         static let scrollViewBottomAnchor: CGFloat = -20
-    }
-}
-// MARK: - Keyboard show/hide notification
-
-extension NoteViewController {
-    private func registerKeyboardNotification() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillShow),
-            name: UIResponder.keyboardWillShowNotification,
-            object: nil
-        )
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillHide),
-            name: UIResponder.keyboardWillHideNotification,
-            object: nil
-        )
-    }
-
-    private func removeKeyboardNotification() {
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-    }
-
-    @objc private func keyboardWillShow(notification: Notification) {
-        editMode = true
-        navigationItem.rightBarButtonItem = doneButtonNavigationBar
-        guard let keyboardValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else {
-            return
-        }
-
-        let keyboardScreenEndFrame = keyboardValue.cgRectValue
-        let keyboardViewEndFrame = noteTextView.convert(keyboardScreenEndFrame, from: noteTextView.window)
-
-        noteTextView.contentInset = UIEdgeInsets(
-            top: 0,
-            left: 0,
-            bottom: keyboardViewEndFrame.height - noteTextView.safeAreaInsets.bottom,
-            right: 0
-        )
-    }
-
-    @objc private func keyboardWillHide(notification: Notification) {
-        editMode = false
-        noteTextView.contentInset = .zero
-        let newPosition = noteTextView.beginningOfDocument
-        noteTextView.selectedTextRange = noteTextView.textRange(from: newPosition, to: newPosition)
-        navigationItem.rightBarButtonItem = nil
     }
 }

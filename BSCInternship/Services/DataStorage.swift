@@ -27,14 +27,14 @@ class DataStorage {
         return notes
     }
 
-    func save(notes: [NoteProtocol]?, key: String) {
-        guard let notesToRecord = notes as? [Note] else { return }
+    func save(notes: [Note], key: String) {
+        guard notes.isEmpty == false else { return }
         do {
             // Create JSON Encoder
             let encoder = JSONEncoder()
 
             // Encode Note
-            let data = try encoder.encode(notesToRecord)
+            let data = try encoder.encode(notes)
 
             // Write Data to UserDefaults
             storage.set(data, forKey: key)
