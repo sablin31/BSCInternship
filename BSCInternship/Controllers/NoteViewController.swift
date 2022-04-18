@@ -9,7 +9,7 @@ import UIKit
 
 // MARK: - ListViewController (SecondView Controller)
 
-class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate, ListViewControllerDelegate {
+class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate {
     // MARK: - Proterties
 
     var currentNote: Note?
@@ -113,15 +113,7 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
         noteTextView.selectedTextRange = noteTextView.textRange(from: newPosition, to: newPosition)
         navigationItem.rightBarButtonItem = nil
     }
-    // MARK: - Delegate methods
 
-    func setCurrentModel(_ model: [Note]) {
-        self.model = model
-    }
-
-    func getUpdateModel() -> [Note] {
-        return self.model
-    }
     // MARK: - Actions methods
 
     @objc func leftBarButtonAction() {

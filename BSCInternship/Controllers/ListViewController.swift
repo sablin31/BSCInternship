@@ -20,7 +20,6 @@ class ListViewController: UIViewController {
 
     weak var delegate: ListViewControllerDelegate?
     var notes: [Note] = []
-    var noteViews: [NoteView] = []
     // MARK: - Private proterties
 
     private let screenWidth = UIScreen.main.bounds.width
@@ -121,11 +120,6 @@ extension ListViewController {
 
     private func loadNotes() {
         self.notes = storage.loadDate(key: Constants.dataStorageKey) ?? []
-        for note in notes {
-            let newNoteView = NoteView()
-            newNoteView.set(with: note)
-            noteViews.append(newNoteView)
-        }
     }
 
     private func registerDidEnterBackgroundNotification() {
@@ -157,25 +151,25 @@ extension ListViewController {
     private func setupViews() {
         view.addSubview(backgroundView)
         backgroundView.addSubview(scrollView)
-        stackView = configureStackView()
+        configureStackView()
         scrollView.addSubview(stackView)
         stackView.layoutIfNeeded()
         scrollView.contentSize = CGSize(width: screenWidth, height: stackView.bounds.height)
         view.addSubview(createNewNoteButton)
     }
 
-    private func configureStackView() -> UIStackView {
-        let stackView = UIStackView()
+    private func configureStackView() {
         stackView.axis = .vertical
         stackView.alignment = .center
         stackView.spacing = Constants.stackViewSpacing
 
-        for noteView in noteViews {
-            addNoteViewInStack(noteView: noteView, in: stackView)
+        for note in notes {
+            let newNoteView = NoteView()
+            newNoteView.set(with: note)
+            addNoteViewInStack(noteView: newNoteView, in: stackView)
         }
 
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        return stackView
     }
 
     private func addNoteViewInStack(noteView: NoteView, in stack: UIStackView) {
@@ -196,8 +190,14 @@ extension ListViewController {
     }
 
     private func updateStackView() {
+        var noteViewsArray: [NoteView] = []
+        for view in stackView.arrangedSubviews {
+            if let currentView = view as? NoteView {
+                noteViewsArray.append(currentView)
+            }
+        }
         for note in notes {
-            if let selectedNoteView = self.noteViews.first(
+            if let selectedNoteView = noteViewsArray.first(
                 where: {
                     $0.note?.id == note.id
                 }
@@ -206,7 +206,7 @@ extension ListViewController {
             } else {
                 let newNoteView = NoteView()
                 newNoteView.set(with: note)
-                self.noteViews.append(newNoteView)
+                noteViewsArray.append(newNoteView)
                 addNoteViewInStack(noteView: newNoteView, in: stackView)
             }
         }
