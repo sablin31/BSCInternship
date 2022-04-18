@@ -10,8 +10,8 @@ import Foundation
 class DataStorage {
     private var storage = UserDefaults.standard
 
-    func loadDate(key: String) -> NoteProtocol? {
-        var note: NoteProtocol?
+    func loadDate(key: String) -> [Note]? {
+        var notes: [Note]?
         // Read Data from UserDefaults
         if let data = storage.data(forKey: key) {
             do {
@@ -19,22 +19,22 @@ class DataStorage {
                 let decoder = JSONDecoder()
 
                 // Decode Note
-                note = try decoder.decode(Note.self, from: data)
+                notes = try decoder.decode([Note].self, from: data)
             } catch {
                 print("Unable to Decode Note (\(error))")
             }
         }
-        return note
+        return notes
     }
 
-    func save(note: NoteProtocol?, key: String) {
-        guard let noteToRecord = note as? Note else { return }
+    func save(notes: [Note], key: String) {
+        guard notes.isEmpty == false else { return }
         do {
             // Create JSON Encoder
             let encoder = JSONEncoder()
 
             // Encode Note
-            let data = try encoder.encode(noteToRecord)
+            let data = try encoder.encode(notes)
 
             // Write Data to UserDefaults
             storage.set(data, forKey: key)
