@@ -18,6 +18,7 @@ struct Note: Codable, Identifiable {
     var date: Date
 
     // MARK: - Init
+
     init(
         title: String?,
         text: String?,

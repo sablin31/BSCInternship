@@ -7,9 +7,9 @@
 
 import UIKit
 
-extension ListViewController: UITableViewDataSource, UITableViewDelegate {
-    // MARK: - Delegate methods
+// MARK: - UITableViewDataSource, UITableViewDelegate methods
 
+extension ListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         ConstantsTableView.heightForRowAt
     }
@@ -28,13 +28,32 @@ extension ListViewController: UITableViewDataSource, UITableViewDelegate {
         cell.set(with: note)
         return cell
     }
+}
+// MARK: - UITableViewDelegate methods
 
+extension ListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let currentNoteViewControler = NoteViewController()
-        delegate = currentNoteViewControler
+        currentNoteViewControler.delegate = self
         currentNoteViewControler.currentNote = notes[indexPath.row]
-        delegate?.setCurrentModel(notes)
         self.navigationController?.pushViewController(currentNoteViewControler, animated: true)
+    }
+}
+// MARK: - NoteViewControllerDelegate methods
+
+extension ListViewController: NoteViewControllerDelegate {
+    func noteWasChanged(with note: Note) {
+        if let item = self.notes.firstIndex(
+            where: {
+                $0.id == note.id
+            }
+        ) {
+            self.notes[item].title = note.title
+            self.notes[item].text = note.text
+            self.notes[item].date = Date()
+        } else {
+            self.notes.append(note)
+        }
     }
 }
 // MARK: - Constants

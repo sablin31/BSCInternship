@@ -11,7 +11,6 @@ import UIKit
 class ListViewController: UIViewController {
     // MARK: - Public proterties
 
-    weak var delegate: ListViewControllerDelegate?
     var notes: [Note] = []
     // MARK: - Private proterties
 
@@ -57,8 +56,7 @@ class ListViewController: UIViewController {
 
     @objc func createNewNote() {
         let newNoteViewController = NoteViewController()
-        delegate = newNoteViewController
-        delegate?.setCurrentModel(notes)
+        newNoteViewController.delegate = self
         self.navigationController?.pushViewController(newNoteViewController, animated: true)
     }
     // MARK: - Init
@@ -78,8 +76,6 @@ class ListViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        guard let updateModel = delegate?.getUpdateModel() else { return }
-        self.notes = updateModel
         tableView.reloadData()
     }
 }

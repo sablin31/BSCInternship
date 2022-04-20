@@ -6,15 +6,19 @@
 //
 
 import UIKit
+// MARK: - Protocol delegate
 
+protocol NoteViewControllerDelegate: AnyObject {
+    func noteWasChanged(with note: Note)
+}
 // MARK: - ListViewController (SecondView Controller)
 
 class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate {
     // MARK: - Proterties
 
     var currentNote: Note?
-    var model: [Note] = []
     var editMode = false
+    weak var delegate: NoteViewControllerDelegate?
     // MARK: - UI Properties
 
     private let backgroundView: UIView = {
@@ -177,24 +181,15 @@ extension NoteViewController {
     }
 
     private func updateModel(title: String?, text: String?) {
-        guard self.currentNote != nil else {
-            let newNote = Note(
-                title: title,
-                text: text
-            )
-            self.model.append(newNote)
-            self.currentNote = newNote
-            return
+        if currentNote != nil {
+            currentNote?.title = title
+            currentNote?.text = text
+            currentNote?.date = Date()
+        } else {
+            currentNote = Note(title: title, text: text)
         }
-
-        if let item = model.firstIndex(
-            where: {
-                $0.id == self.currentNote?.id
-            }
-        ) {
-            self.model[item].title = title
-            self.model[item].text = text
-            self.model[item].date = Date()
+        if let currentNote = currentNote {
+            delegate?.noteWasChanged(with: currentNote)
         }
     }
 
