@@ -6,13 +6,6 @@
 //
 
 import UIKit
-
-// MARK: - Protocol delegate
-
-protocol ListViewControllerDelegate: AnyObject {
-    func setCurrentModel(_ model: [Note])
-    func getUpdateModel() -> [Note]
-}
 // MARK: - ListViewController (RootView Controller)
 
 class ListViewController: UIViewController {
@@ -22,7 +15,6 @@ class ListViewController: UIViewController {
     var notes: [Note] = []
     // MARK: - Private proterties
 
-    private let screenWidth = UIScreen.main.bounds.width
     private let storage = DataStorage()
     // MARK: - UI Properties
 
@@ -42,15 +34,15 @@ class ListViewController: UIViewController {
         return label
     }()
 
-    private let scrollView: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.isScrollEnabled = true
-        scrollView.showsVerticalScrollIndicator = false
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        return scrollView
+    private let tableView: UITableView = {
+        let tableView = UITableView()
+        tableView.backgroundColor = .clear
+        tableView.showsVerticalScrollIndicator = false
+        tableView.separatorColor = .clear
+        tableView.register(NoteCell.self, forCellReuseIdentifier: ConstantsTableView.cellIdentifier)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        return tableView
     }()
-
-    private var stackView = UIStackView()
 
     private lazy var createNewNoteButton: UIButton = {
         let button = UIButton()
@@ -69,26 +61,6 @@ class ListViewController: UIViewController {
         delegate?.setCurrentModel(notes)
         self.navigationController?.pushViewController(newNoteViewController, animated: true)
     }
-
-    @objc func handleTap(_ sender: UITapGestureRecognizer? = nil) {
-        guard let currentNoteView = sender?.view as? NoteView else { return }
-
-        let currentNoteViewControler = NoteViewController()
-        delegate = currentNoteViewControler
-
-        let currentNote = currentNoteView.note
-        // Определение заметки которая была выбрана
-        if let selectedNote = notes.first(
-            where: {
-                $0.id == currentNote?.id
-            }
-        ) {
-            // Передача выбранной заметки во 2-ю вью
-            currentNoteViewControler.currentNote = selectedNote
-            delegate?.setCurrentModel(notes)
-        }
-        self.navigationController?.pushViewController(currentNoteViewControler, animated: true)
-    }
     // MARK: - Init
 
     deinit {
@@ -98,9 +70,9 @@ class ListViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = Constants.backgroundColor
         loadNotes()
         configureUI()
+        setupDelegate()
         registerDidEnterBackgroundNotification()
     }
 
@@ -108,9 +80,7 @@ class ListViewController: UIViewController {
         super.viewWillAppear(animated)
         guard let updateModel = delegate?.getUpdateModel() else { return }
         self.notes = updateModel
-        updateStackView()
-        stackView.layoutIfNeeded()
-        scrollView.contentSize = CGSize(width: screenWidth, height: stackView.bounds.height)
+        tableView.reloadData()
     }
 }
 // MARK: - Private methods
@@ -149,67 +119,15 @@ extension ListViewController {
     }
 
     private func setupViews() {
+        view.backgroundColor = Constants.backgroundColor
         view.addSubview(backgroundView)
-        backgroundView.addSubview(scrollView)
-        configureStackView()
-        scrollView.addSubview(stackView)
-        stackView.layoutIfNeeded()
-        scrollView.contentSize = CGSize(width: screenWidth, height: stackView.bounds.height)
+        backgroundView.addSubview(tableView)
         view.addSubview(createNewNoteButton)
     }
 
-    private func configureStackView() {
-        stackView.axis = .vertical
-        stackView.alignment = .center
-        stackView.spacing = Constants.stackViewSpacing
-
-        for note in notes {
-            let newNoteView = NoteView()
-            newNoteView.set(with: note)
-            addNoteViewInStack(noteView: newNoteView, in: stackView)
-        }
-
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-    }
-
-    private func addNoteViewInStack(noteView: NoteView, in stack: UIStackView) {
-        let tap = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
-        noteView.addGestureRecognizer(tap)
-        stack.addArrangedSubview(noteView)
-        NSLayoutConstraint.activate([
-            noteView.heightAnchor.constraint(equalToConstant: Constants.stackViewContentHeight),
-            noteView.leadingAnchor.constraint(
-                equalTo: stack.leadingAnchor,
-                constant: Constants.stackViewContentLeadingAnchor
-            ),
-            noteView.trailingAnchor.constraint(
-                equalTo: stack.trailingAnchor,
-                constant: Constants.stackViewContentTrailingAnchor
-            )
-        ])
-    }
-
-    private func updateStackView() {
-        var noteViewsArray: [NoteView] = []
-        for view in stackView.arrangedSubviews {
-            if let currentView = view as? NoteView {
-                noteViewsArray.append(currentView)
-            }
-        }
-        for note in notes {
-            if let selectedNoteView = noteViewsArray.first(
-                where: {
-                    $0.note?.id == note.id
-                }
-            ) {
-                selectedNoteView.set(with: note)
-            } else {
-                let newNoteView = NoteView()
-                newNoteView.set(with: note)
-                noteViewsArray.append(newNoteView)
-                addNoteViewInStack(noteView: newNoteView, in: stackView)
-            }
-        }
+    private func setupDelegate() {
+        tableView.delegate = self
+        tableView.dataSource = self
     }
 
     // MARK: Set constraint
@@ -233,19 +151,16 @@ extension ListViewController {
         }
 
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(
-                equalTo: backgroundView.topAnchor,
-                constant: Constants.scrollViewTopAnchor
+            tableView.topAnchor.constraint(equalTo: backgroundView.topAnchor),
+            tableView.leadingAnchor.constraint(
+                equalTo: backgroundView.leadingAnchor,
+                constant: Constants.tableViewLeadingAnchor
             ),
-            scrollView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor)
-        ])
-
-        NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            stackView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            stackView.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor)
+            tableView.trailingAnchor.constraint(
+                equalTo: backgroundView.trailingAnchor,
+                constant: Constants.tableViewTrailingAnchor
+            ),
+            tableView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor)
         ])
 
         NSLayoutConstraint.activate([
@@ -283,19 +198,14 @@ extension ListViewController {
         static let titleLabelTextColor = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
         static let titleLabelText = "Заметки"
 
-        static let stackViewSpacing: CGFloat = 4
-
         static let frameCreateNewNoteButton = CGRect(x: 0, y: 0, width: 50, height: 50)
         static let cornerRadiusCreateNewNoteButton = 0.5
         static let imageNameCreateNewNoteButton = "roundButtonPlus.png"
 
         // MARK: Constraint constants
 
-        static let scrollViewTopAnchor: CGFloat = 26
-
-        static let stackViewContentHeight: CGFloat = 90
-        static let stackViewContentLeadingAnchor: CGFloat = 16
-        static let stackViewContentTrailingAnchor: CGFloat = -16
+        static let tableViewLeadingAnchor: CGFloat = 10
+        static let tableViewTrailingAnchor: CGFloat = -10
 
         static let createNewNoteButtonWidthAnchor: CGFloat = 50
         static let createNewNoteButtonHeightAnchor: CGFloat = 50
