@@ -38,7 +38,7 @@ class ListViewController: UIViewController {
         tableView.backgroundColor = .clear
         tableView.showsVerticalScrollIndicator = false
         tableView.separatorColor = .clear
-        tableView.register(NoteCell.self, forCellReuseIdentifier: ConstantsTableView.cellIdentifier)
+        tableView.register(NoteCell.self, forCellReuseIdentifier: NoteCell.reuseId)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
@@ -79,6 +79,52 @@ class ListViewController: UIViewController {
         tableView.reloadData()
     }
 }
+// MARK: - UITableViewDataSource, UITableViewDelegate methods
+
+extension ListViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        Constants.heightForRowAt
+    }
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        notes.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: NoteCell.reuseId) as? NoteCell
+        let note = notes[indexPath.row]
+        cell?.set(with: note)
+        return cell ?? UITableViewCell()
+    }
+}
+// MARK: - UITableViewDelegate methods
+
+extension ListViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let currentNoteViewControler = NoteViewController()
+        currentNoteViewControler.delegate = self
+        currentNoteViewControler.currentNote = notes[indexPath.row]
+        self.navigationController?.pushViewController(currentNoteViewControler, animated: true)
+    }
+}
+// MARK: - NoteViewControllerDelegate methods
+
+extension ListViewController: NoteViewControllerDelegate {
+    func noteWasChanged(with note: Note) {
+        if let item = self.notes.firstIndex(
+            where: {
+                $0.id == note.id
+            }
+        ) {
+            self.notes[item].title = note.title
+            self.notes[item].text = note.text
+            self.notes[item].date = Date()
+        } else {
+            self.notes.append(note)
+        }
+    }
+}
+
 // MARK: - Private methods
 
 extension ListViewController {
@@ -197,6 +243,8 @@ extension ListViewController {
         static let frameCreateNewNoteButton = CGRect(x: 0, y: 0, width: 50, height: 50)
         static let cornerRadiusCreateNewNoteButton = 0.5
         static let imageNameCreateNewNoteButton = "roundButtonPlus.png"
+
+        static let heightForRowAt = 94.0
 
         // MARK: Constraint constants
 

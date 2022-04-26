@@ -123,7 +123,7 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
     @objc func leftBarButtonAction() {
         let title = (titleTextField.text?.isEmpty ?? true) ? nil : titleTextField.text
         let text = (noteTextView.text?.isEmpty ?? true) ? nil : noteTextView.text
-        if title != nil || text != nil && editMode {
+        if (title != nil || text != nil) && editMode {
             updateModel(title: title, text: text)
         }
         self.navigationController?.popViewController(animated: true)
@@ -159,7 +159,7 @@ extension NoteViewController {
 
         titleTextField.autocorrectionType = .no
         noteTextView.autocorrectionType = .no
-        if currentNote == nil { noteTextView.becomeFirstResponder() }
+        if self.currentNote == nil { noteTextView.becomeFirstResponder() }
     }
 
     private func setNavigationBar() {
@@ -190,6 +190,7 @@ extension NoteViewController {
         }
         if let currentNote = currentNote {
             delegate?.noteWasChanged(with: currentNote)
+            dateLabel.text = currentNote.date.toString(dateFormat: Constants.dateFormat)
         }
     }
 

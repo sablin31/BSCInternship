@@ -10,6 +10,7 @@ import UIKit
 class NoteCell: UITableViewCell {
     // MARK: - Properties
 
+    static let reuseId = String(describing: NoteCell.self)
     var note: Note?
     // MARK: - UI Properties
 
@@ -60,8 +61,12 @@ class NoteCell: UITableViewCell {
         self.note = note
         updateData()
     }
-    override func awakeFromNib() {
-        super.awakeFromNib()
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.titleLabel.text = nil
+        self.dateLabel.text = nil
+        self.txtLabel.text = nil
         self.titleLabel.text = note?.title ?? " "
         self.dateLabel.text = note?.date.toString(dateFormat: Constants.dateFormat)
         self.txtLabel.text = note?.text
