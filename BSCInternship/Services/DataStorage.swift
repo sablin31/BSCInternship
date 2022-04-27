@@ -7,6 +7,8 @@
 
 import Foundation
 
+// MARK: - Save data to UserDefaults
+
 class DataStorage {
     private var storage = UserDefaults.standard
 
