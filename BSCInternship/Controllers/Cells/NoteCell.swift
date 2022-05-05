@@ -47,7 +47,6 @@ class NoteCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-
         configureСell()
         setConstraints()
     }
@@ -55,12 +54,7 @@ class NoteCell: UITableViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    // MARK: - Public methods
-
-    func set(with note: Note?) {
-        self.note = note
-        updateData()
-    }
+    // MARK: - Inheritance
 
     override func prepareForReuse() {
         super.prepareForReuse()
@@ -71,21 +65,35 @@ class NoteCell: UITableViewCell {
         self.dateLabel.text = note?.date.toString(dateFormat: Constants.dateFormat)
         self.txtLabel.text = note?.text
     }
-}
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        self.layer.cornerRadius = Constants.viewCornerRadius
+    }
+
+    // MARK: - Public methods
+
+    func set(with note: Note?) {
+        self.note = note
+        updateData()
+    }
+}
 // MARK: - Private methods
 
 extension NoteCell {
     private func configureСell() {
-        self.backgroundColor = .clear
-        self.addSubview(bgView)
+        self.layer.borderColor = Constants.backgroundColor.cgColor
+        self.layer.borderWidth = Constants.viewBorderWidth
+        self.layer.cornerRadius = Constants.viewCornerRadius
+        self.layer.backgroundColor = Constants.viewBgColor.cgColor
+        self.clipsToBounds = true
+        contentView.addSubview(bgView)
         bgView.addSubview(titleLabel)
         bgView.addSubview(txtLabel)
         bgView.addSubview(dateLabel)
-        bgView.layer.backgroundColor = Constants.viewBgColor
-        bgView.layer.cornerRadius = Constants.viewCornerRadius
-        self.selectionStyle = .none
-        self.clipsToBounds = true
+        let selectedBGView = UIView()
+        selectedBGView.backgroundColor = .clear
+        self.selectedBackgroundView = selectedBGView
     }
 
     func updateData() {
@@ -97,15 +105,14 @@ extension NoteCell {
     private func setConstraints() {
         NSLayoutConstraint.activate([
             bgView.topAnchor.constraint(equalTo: self.topAnchor),
-            bgView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            bgView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            bgView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: Constants.bgViewBottomAnchor)
+            bgView.widthAnchor.constraint(equalTo: self.widthAnchor),
+            bgView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
         ])
 
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(
                 equalTo: bgView.topAnchor,
-                constant: Constants.txtLabelTopAnchor
+                constant: Constants.titleLabelTopAnchor
             ),
             titleLabel.leadingAnchor.constraint(
                 equalTo: bgView.leadingAnchor,
@@ -153,7 +160,6 @@ extension NoteCell {
 extension NoteCell {
     private enum Constants {
         // MARK: Constraint constant
-        static let bgViewBottomAnchor: CGFloat = -4
 
         static let titleLabelTopAnchor: CGFloat = 10
         static let titleLabelLeadingAnchor: CGFloat = 16
@@ -169,8 +175,11 @@ extension NoteCell {
 
         // MARK: UI Constant properties
 
-        static let viewBgColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1).cgColor
+        static let backgroundColor = UIColor(red: 0.976, green: 0.98, blue: 0.996, alpha: 1)
+
+        static let viewBgColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
         static let viewCornerRadius: CGFloat = 14
+        static let viewBorderWidth: CGFloat = 2
 
         static let titleLabelTextColor = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
         static let titleLabelTextFont = UIFont(name: "SFProText-Medium", size: 16)

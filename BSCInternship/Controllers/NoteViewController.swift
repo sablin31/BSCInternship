@@ -17,7 +17,6 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
     // MARK: - Proterties
 
     var currentNote: Note?
-    var editMode = false
     weak var delegate: NoteViewControllerDelegate?
     // MARK: - UI Properties
 
@@ -93,7 +92,7 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
     }
 
     @objc override func keyboardWillShow(notification: Notification) {
-        self.editMode = true
+        self.setEditing(true, animated: true)
         navigationItem.rightBarButtonItem = doneButtonNavigationBar
         guard let keyboardValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else {
             return
@@ -103,15 +102,15 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
         let keyboardViewEndFrame = noteTextView.convert(keyboardScreenEndFrame, from: noteTextView.window)
 
         noteTextView.contentInset = UIEdgeInsets(
-            top: 0,
-            left: 0,
+            top: Constants.noteTextViewContentInsetTop,
+            left: Constants.noteTextViewContentInsetLeft,
             bottom: keyboardViewEndFrame.height - noteTextView.safeAreaInsets.bottom,
-            right: 0
+            right: Constants.noteTextViewContentInsetRight
         )
     }
 
     @objc override func keyboardWillHide(notification: Notification) {
-        self.editMode = false
+        self.setEditing(false, animated: true)
         noteTextView.contentInset = .zero
         let newPosition = noteTextView.beginningOfDocument
         noteTextView.selectedTextRange = noteTextView.textRange(from: newPosition, to: newPosition)
@@ -123,7 +122,7 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
     @objc func leftBarButtonAction() {
         let title = (titleTextField.text?.isEmpty ?? true) ? nil : titleTextField.text
         let text = (noteTextView.text?.isEmpty ?? true) ? nil : noteTextView.text
-        if (title != nil || text != nil) && editMode {
+        if (title != nil || text != nil) && self.isEditing {
             updateModel(title: title, text: text)
         }
         self.navigationController?.popViewController(animated: true)
@@ -134,7 +133,11 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
         let title = (titleTextField.text?.isEmpty ?? true) ? nil : titleTextField.text
         let text = (noteTextView.text?.isEmpty ?? true) ? nil : noteTextView.text
         if title == nil, text == nil {
-            showAlert()
+            showAlert(
+                titleMessage: Constants.titleAlert,
+                message: Constants.messageAlert,
+                titleButton: Constants.titleOkButtonAlert
+            )
         } else {
             updateModel(title: title, text: text)
         }
@@ -251,7 +254,7 @@ extension NoteViewController {
                 relatedBy: .equal,
                 toItem: titleTextField,
                 attribute: .bottom,
-                multiplier: 1,
+                multiplier: Constants.scrollViewMultiplier,
                 constant: Constants.scrollViewVerticalSpacing
             ),
             scrollView.leadingAnchor.constraint(
@@ -274,22 +277,6 @@ extension NoteViewController {
             noteTextView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
             noteTextView.heightAnchor.constraint(equalTo: scrollView.heightAnchor)
         ])
-    }
-
-    private func showAlert() {
-        let dialogMessage = UIAlertController(
-            title: Constants.titleAlert,
-            message: Constants.messageAlert,
-            preferredStyle: .alert
-        )
-
-        let okButton = UIAlertAction(
-            title: Constants.titleOkButtonAlert,
-            style: .default
-        )
-
-        dialogMessage.addAction(okButton)
-        self.present(dialogMessage, animated: true, completion: nil)
     }
 }
 // MARK: - Constants
@@ -318,6 +305,10 @@ extension NoteViewController {
         static let messageAlert = "Оба поля заметки не могут быть пустыми"
         static let titleOkButtonAlert = "OK"
 
+        static let noteTextViewContentInsetTop: CGFloat = 0
+        static let noteTextViewContentInsetLeft: CGFloat = 0
+        static let noteTextViewContentInsetRight: CGFloat = 0
+
         // MARK: Constraint constants
 
         static let dataLabelTopAnchor: CGFloat = 12
@@ -332,5 +323,6 @@ extension NoteViewController {
         static let scrollViewLeadingAnchor: CGFloat = 20
         static let scrollViewTrailingAnchor: CGFloat = -20
         static let scrollViewBottomAnchor: CGFloat = -20
+        static let scrollViewMultiplier: CGFloat = 1
     }
 }

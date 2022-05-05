@@ -37,3 +37,22 @@ extension UIViewController {
     @objc func keyboardWillHide(notification: Notification) {
     }
 }
+// MARK: - Ok Alert show
+
+extension UIViewController {
+    func showAlert(titleMessage: String, message: String, titleButton: String) {
+        let dialogMessage = UIAlertController(
+            title: titleMessage,
+            message: message,
+            preferredStyle: .alert
+        )
+
+        let okButton = UIAlertAction(
+            title: titleButton,
+            style: .default
+        )
+
+        dialogMessage.addAction(okButton)
+        self.present(dialogMessage, animated: true, completion: nil)
+    }
+}
