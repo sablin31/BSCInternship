@@ -65,24 +65,19 @@ class ListViewController: UIViewController {
 
     @objc func createOrDeleteNote() {
         if isEditing == false {
+            tableView.setEditing(false, animated: true)
             UIView.transition(
                 with: createOrDeleteNoteButton,
                 duration: Constants.buttonAnimationDurationUp,
                 options: .curveLinear,
-                animations: { [weak self] in
-                    guard let self = self else {
-                        return
-                    }
+                animations: { [weak self] in guard let self = self else { return }
                     self.createOrDeleteNoteButton.frame.origin.y -= Constants.buttonAnimationPositionUp
                 }, completion: {_ in
                     UIView.transition(
                         with: self.createOrDeleteNoteButton,
                         duration: Constants.buttonAnimationDurationDown,
                         options: .curveLinear,
-                        animations: { [weak self] in
-                            guard let self = self else {
-                                return
-                            }
+                        animations: { [weak self] in guard let self = self else { return }
                             self.createOrDeleteNoteButton.frame.origin.y = UIScreen.main.bounds.maxY
                         }, completion: { _ in
                             self.createNote()
@@ -96,6 +91,7 @@ class ListViewController: UIViewController {
     }
 
     @objc func rightBarButtonAction() {
+        tableView.setEditing(false, animated: true)
         if notes.isEmpty {
             showAlert(
                 titleMessage: Constants.titleAlert,
@@ -123,7 +119,7 @@ class ListViewController: UIViewController {
 
     override func setEditing(_ editing: Bool, animated: Bool) {
         if isEditing == true {
-            self.rightButtonNavigationBar.setTitle(Constants.chooseRightButtonNavigationBarTitle, for: .normal)
+            rightButtonNavigationBar.setTitle(Constants.chooseRightButtonNavigationBarTitle, for: .normal)
             createOrDeleteNoteButton.setImage(
                 UIImage(named: Constants.imageCreateForCreateOrDeleteNoteButton), for: .normal
             )
@@ -136,7 +132,7 @@ class ListViewController: UIViewController {
             )
             tableView.setEditing(false, animated: true)
         } else {
-            self.rightButtonNavigationBar.setTitle(Constants.doneRightButtonNavigationBarTitle, for: .normal)
+            rightButtonNavigationBar.setTitle(Constants.doneRightButtonNavigationBarTitle, for: .normal)
             createOrDeleteNoteButton.setImage(
                 UIImage(named: Constants.imageDeleteForCreateOrDeleteNoteButton), for: .normal
             )
@@ -161,10 +157,7 @@ class ListViewController: UIViewController {
             usingSpringWithDamping: Constants.buttonAnimationUsingSpringWithDamping,
             initialSpringVelocity: Constants.buttonAnimationInitialSpringVelocity,
             options: [],
-            animations: { [weak self] in
-                guard let self = self else {
-                    return
-                }
+            animations: { [weak self] in guard let self = self else { return }
                 self.createOrDeleteNoteButton.bounds.origin.y -= Constants.buttonAnimatioPosition
             },
             completion: nil
@@ -197,7 +190,7 @@ extension ListViewController: UITableViewDelegate {
             let currentNoteViewControler = NoteViewController()
             currentNoteViewControler.delegate = self
             currentNoteViewControler.currentNote = notes[indexPath.row]
-            self.navigationController?.pushViewController(currentNoteViewControler, animated: true)
+            navigationController?.pushViewController(currentNoteViewControler, animated: true)
         }
     }
 
@@ -215,6 +208,7 @@ extension ListViewController: UITableViewDelegate {
         actionDelete.image = UIImage(named: Constants.swipeDeleteIconImageName)
         actionDelete.backgroundColor = Constants.backgroundColor
         let actions = UISwipeActionsConfiguration(actions: [actionDelete])
+        actions.performsFirstActionWithFullSwipe = false
         return actions
     }
 }
@@ -238,20 +232,20 @@ extension ListViewController: NoteViewControllerDelegate {
 
 // MARK: - Private methods
 
-extension ListViewController {
+private extension ListViewController {
     // MARK: Data storage methods
 
-    private func loadNotes() {
+    func loadNotes() {
         self.notes = storage.loadDate(key: Constants.dataStorageKey) ?? []
     }
 
-    private func createNote() {
+    func createNote() {
         let newNoteViewController = NoteViewController()
         newNoteViewController.delegate = self
-        self.navigationController?.pushViewController(newNoteViewController, animated: true)
+        navigationController?.pushViewController(newNoteViewController, animated: true)
     }
 
-    private func deleteNote() {
+    func deleteNote() {
         guard let selectedRows = tableView.indexPathsForSelectedRows else {
             showAlert(
                 titleMessage: Constants.titleAlert,
@@ -278,7 +272,7 @@ extension ListViewController {
         setEditing(false, animated: true)
     }
 
-    private func registerDidEnterBackgroundNotification() {
+    func registerDidEnterBackgroundNotification() {
         NotificationCenter.default.addObserver(
             forName: UIApplication.didEnterBackgroundNotification,
             object: nil,
@@ -288,7 +282,7 @@ extension ListViewController {
         }
     }
 
-    private func removeDidEnterBackgroundNotification() {
+    func removeDidEnterBackgroundNotification() {
         NotificationCenter.default.removeObserver(
             self,
             name: UIApplication.didEnterBackgroundNotification,
@@ -298,33 +292,33 @@ extension ListViewController {
 
     // MARK: Configure UI
 
-    private func configureUI() {
+    func configureUI() {
         self.navigationItem.titleView = titleLabel
         setupViews()
         setNavigationBar()
         setConstraints()
     }
 
-    private func setupViews() {
+    func setupViews() {
         view.backgroundColor = Constants.backgroundColor
         view.addSubview(backgroundView)
         backgroundView.addSubview(tableView)
         view.addSubview(createOrDeleteNoteButton)
     }
 
-    private func setNavigationBar() {
-        self.navigationController?.navigationBar.setValue(true, forKey: Constants.navigationBarPropertiesKey)
+    func setNavigationBar() {
+        navigationController?.navigationBar.setValue(true, forKey: Constants.navigationBarPropertiesKey)
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: rightButtonNavigationBar)
     }
 
-    private func setupDelegate() {
+    func setupDelegate() {
         tableView.delegate = self
         tableView.dataSource = self
     }
 
     // MARK: Set constraint
 
-    private func setConstraints() {
+    func setConstraints() {
         if #available(iOS 11, *) {
             let guide = view.safeAreaLayoutGuide
             NSLayoutConstraint.activate([

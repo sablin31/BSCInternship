@@ -92,7 +92,7 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
     }
 
     @objc override func keyboardWillShow(notification: Notification) {
-        self.setEditing(true, animated: true)
+        setEditing(true, animated: true)
         navigationItem.rightBarButtonItem = doneButtonNavigationBar
         guard let keyboardValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else {
             return
@@ -110,7 +110,7 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
     }
 
     @objc override func keyboardWillHide(notification: Notification) {
-        self.setEditing(false, animated: true)
+        setEditing(false, animated: true)
         noteTextView.contentInset = .zero
         let newPosition = noteTextView.beginningOfDocument
         noteTextView.selectedTextRange = noteTextView.textRange(from: newPosition, to: newPosition)
@@ -122,10 +122,10 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
     @objc func leftBarButtonAction() {
         let title = (titleTextField.text?.isEmpty ?? true) ? nil : titleTextField.text
         let text = (noteTextView.text?.isEmpty ?? true) ? nil : noteTextView.text
-        if (title != nil || text != nil) && self.isEditing {
+        if (title != nil || text != nil) && isEditing {
             updateModel(title: title, text: text)
         }
-        self.navigationController?.popViewController(animated: true)
+        navigationController?.popViewController(animated: true)
     }
 
     @objc func rightBarButtonAction() {
@@ -145,8 +145,8 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
 }
 // MARK: - Private Methods
 
-extension NoteViewController {
-    private func configureUI() {
+private extension NoteViewController {
+    func configureUI() {
         setupViews()
         setNavigationBar()
         setConstraints()
@@ -165,11 +165,11 @@ extension NoteViewController {
         if self.currentNote == nil { noteTextView.becomeFirstResponder() }
     }
 
-    private func setNavigationBar() {
+    func setNavigationBar() {
         navigationItem.leftBarButtonItem = backButtonNavigationBar
     }
 
-    private func setupViews() {
+    func setupViews() {
         view.backgroundColor = .white
         view.addSubview(backgroundView)
         backgroundView.addSubview(dateLabel)
@@ -178,12 +178,12 @@ extension NoteViewController {
         scrollView.addSubview(noteTextView)
     }
 
-    private func setupDelegate() {
-        self.titleTextField.delegate = self
-        self.noteTextView.delegate = self
+    func setupDelegate() {
+        titleTextField.delegate = self
+        noteTextView.delegate = self
     }
 
-    private func updateModel(title: String?, text: String?) {
+    func updateModel(title: String?, text: String?) {
         if currentNote != nil {
             currentNote?.title = title
             currentNote?.text = text
@@ -199,7 +199,7 @@ extension NoteViewController {
 
     // MARK: Set constraint
 
-    private func setConstraints() {
+    func setConstraints() {
         if #available(iOS 11, *) {
             let guide = view.safeAreaLayoutGuide
             NSLayoutConstraint.activate([

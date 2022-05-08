@@ -58,12 +58,12 @@ class NoteCell: UITableViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        self.titleLabel.text = nil
-        self.dateLabel.text = nil
-        self.txtLabel.text = nil
-        self.titleLabel.text = note?.title ?? " "
-        self.dateLabel.text = note?.date.toString(dateFormat: Constants.dateFormat)
-        self.txtLabel.text = note?.text
+        titleLabel.text = nil
+        dateLabel.text = nil
+        txtLabel.text = nil
+        titleLabel.text = note?.title ?? " "
+        dateLabel.text = note?.date.toString(dateFormat: Constants.dateFormat)
+        txtLabel.text = note?.text
     }
 
     override func layoutSubviews() {
@@ -80,8 +80,8 @@ class NoteCell: UITableViewCell {
 }
 // MARK: - Private methods
 
-extension NoteCell {
-    private func configureСell() {
+private extension NoteCell {
+    func configureСell() {
         self.layer.borderColor = Constants.backgroundColor.cgColor
         self.layer.borderWidth = Constants.viewBorderWidth
         self.layer.cornerRadius = Constants.viewCornerRadius
@@ -97,12 +97,12 @@ extension NoteCell {
     }
 
     func updateData() {
-        self.titleLabel.text = note?.title ?? " "
-        self.dateLabel.text = note?.date.toString(dateFormat: Constants.dateFormat)
-        self.txtLabel.text = note?.text
+        titleLabel.text = note?.title ?? " "
+        dateLabel.text = note?.date.toString(dateFormat: Constants.dateFormat)
+        txtLabel.text = note?.text
     }
 
-    private func setConstraints() {
+    func setConstraints() {
         NSLayoutConstraint.activate([
             bgView.topAnchor.constraint(equalTo: self.topAnchor),
             bgView.widthAnchor.constraint(equalTo: self.widthAnchor),
