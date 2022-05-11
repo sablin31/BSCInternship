@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Struct model
 
-struct Note: Codable, Identifiable {
+struct Note: Codable, Identifiable, Equatable {
     // MARK: - Public Properties
 
     var id = UUID()

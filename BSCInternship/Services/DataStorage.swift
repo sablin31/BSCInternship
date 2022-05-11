@@ -30,7 +30,6 @@ class DataStorage {
     }
 
     func save(notes: [Note], key: String) {
-        guard notes.isEmpty == false else { return }
         do {
             // Create JSON Encoder
             let encoder = JSONEncoder()
