@@ -200,7 +200,6 @@ extension ListViewController: UITableViewDataSource {
     }
 }
 // MARK: - UITableViewDelegate methods
-
 extension ListViewController {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if tableView.isEditing == false {
@@ -250,7 +249,6 @@ extension ListViewController {
     }
 }
 // MARK: - NoteViewControllerDelegate methods (Update data)
-
 extension ListViewController: NoteViewControllerDelegate {
     func noteWasChanged(with note: Note) {
         if let item = self.notesInDevice.firstIndex( where: { $0.id == note.id }) {
@@ -267,7 +265,6 @@ extension ListViewController: NoteViewControllerDelegate {
     }
 }
 // MARK: - Private methods
-
 private extension ListViewController {
     // MARK: CRuD methods
     func createNote() {
@@ -285,7 +282,11 @@ private extension ListViewController {
                     let newNote = Note(
                         title: note.title,
                         text: note.text,
-                        date: note.date ?? Date()
+                        date: Date(
+                            timeIntervalSince1970: TimeInterval(
+                                    note.date ?? Int64(Date().timeIntervalSince1970)
+                            )
+                        )
                     )
                     self?.notesInWeb.append(newNote)
                 }
@@ -379,7 +380,6 @@ private extension ListViewController {
     }
 }
 // MARK: - Set constraint
-
 extension ListViewController {
     func setConstraints() {
         if #available(iOS 11, *) {

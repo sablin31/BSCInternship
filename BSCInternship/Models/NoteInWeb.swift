@@ -14,7 +14,7 @@ struct NoteInWeb: Decodable {
 
     let title: String?
     let text: String?
-    let date: Date?
+    let date: Int64?
     // MARK: - CodingKeys
 
     private enum CodingKeys: String, CodingKey {
