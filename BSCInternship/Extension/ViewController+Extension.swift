@@ -31,11 +31,9 @@ extension UIViewController {
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 
-    @objc func keyboardWillShow(notification: Notification) {
-    }
+    @objc func keyboardWillShow(notification: Notification) {}
 
-    @objc func keyboardWillHide(notification: Notification) {
-    }
+    @objc func keyboardWillHide(notification: Notification) {}
 }
 // MARK: - Ok Alert show
 

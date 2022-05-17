@@ -7,7 +7,7 @@
 
 import Foundation
 
-// MARK: - Struct model
+// MARK: - Note in device model
 
 struct Note: Codable, Identifiable, Equatable {
     // MARK: - Public Properties
@@ -16,7 +16,6 @@ struct Note: Codable, Identifiable, Equatable {
     var title: String?
     var text: String?
     var date: Date
-
     // MARK: - Init
 
     init(
