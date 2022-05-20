@@ -8,13 +8,15 @@
 import UIKit
 // MARK: - ListViewController (RootView Controller)
 
-class ListViewController: UIViewController {
+final class ListViewController: UIViewController, UITableViewDelegate {
     // MARK: - Public proterties
 
-    var notes: [Note] = []
+    var notesInDevice: [Note] = []
+    var notesInWeb: [Note] = []
     // MARK: - Private proterties
 
-    private let storage = DataStorage()
+    private let storageWorker = WorkerStorage()
+    private let webWorker = WorkerWeb()
     // MARK: - UI Properties
 
     private let backgroundView: UIView = {
@@ -25,7 +27,6 @@ class ListViewController: UIViewController {
 
     private let titleLabel: UILabel = {
         let label = UILabel(frame: Constants.titleLabelFrame)
-        label.textColor = Constants.titleLabelTextColor
         label.font = Constants.titleLabelTextFont
         label.text = Constants.titleLabelText
         label.textAlignment = .center
@@ -60,7 +61,6 @@ class ListViewController: UIViewController {
         button.addTarget(self, action: #selector(rightBarButtonAction), for: .touchUpInside)
         return button
     }()
-
     // MARK: - Actions methods
 
     @objc func createOrDeleteNote() {
@@ -79,39 +79,31 @@ class ListViewController: UIViewController {
                         options: .curveLinear,
                         animations: { [weak self] in guard let self = self else { return }
                             self.createOrDeleteNoteButton.frame.origin.y = UIScreen.main.bounds.maxY
-                        }, completion: { _ in
-                            self.createNote()
-                        }
+                        }, completion: { _ in self.createNote() }
                     )
                 }
             )
-        } else {
-            deleteNote()
-        }
+        } else { deleteNote() }
     }
 
     @objc func rightBarButtonAction() {
         tableView.setEditing(false, animated: true)
-        if notes.isEmpty {
+        if notesInDevice.isEmpty {
             showAlert(
                 titleMessage: Constants.titleAlert,
                 message: Constants.messageAlertNotNotes,
                 titleButton: Constants.titleOkButtonAlert
             )
-        } else {
-            isEditing ? setEditing(false, animated: true) : setEditing(true, animated: true)
-        }
+        } else { isEditing ? setEditing(false, animated: true) : setEditing(true, animated: true) }
     }
     // MARK: - Init
 
-    deinit {
-        removeDidEnterBackgroundNotification()
-    }
+    deinit { removeDidEnterBackgroundNotification() }
     // MARK: - Inheritance
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadNotes()
+        readNotes()
         configureUI()
         setupDelegate()
         registerDidEnterBackgroundNotification()
@@ -163,33 +155,61 @@ class ListViewController: UIViewController {
             completion: nil
         )
     }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if #available(iOS 13.0, *) {
+            if self.traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+                changeColorUI(to: traitCollection.userInterfaceStyle)
+                tableView.reloadData()
+            }
+        }
+    }
 }
 // MARK: - UITableViewDataSource
 
 extension ListViewController: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int { return Constants.numbersOfSections }
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         Constants.heightForRowAt
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        notes.count
+        if section == Constants.notesInDeviceNumberOfSection {
+            return notesInDevice.count
+        } else { return notesInWeb.count }
+    }
+
+   func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if section == Constants.notesInDeviceNumberOfSection {
+            return notesInDevice.isEmpty == false ? Constants.notesInDeviceTitleSection : nil
+        } else {
+            return notesInWeb.isEmpty == false ? Constants.notesInWebTitleSection : nil
+        }
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: NoteCell.reuseId) as? NoteCell
-        let note = notes[indexPath.row]
+        let note: Note
+        if indexPath.section == Constants.notesInDeviceNumberOfSection {
+            note = notesInDevice[indexPath.row]
+        } else { note = notesInWeb[indexPath.row] }
         cell?.set(with: note)
         return cell ?? UITableViewCell()
     }
 }
 // MARK: - UITableViewDelegate methods
-
-extension ListViewController: UITableViewDelegate {
+extension ListViewController {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if tableView.isEditing == false {
             let currentNoteViewControler = NoteViewController()
             currentNoteViewControler.delegate = self
-            currentNoteViewControler.currentNote = notes[indexPath.row]
+            if indexPath.section == Constants.notesInDeviceNumberOfSection {
+                currentNoteViewControler.currentNote = notesInDevice[indexPath.row]
+            } else {
+                currentNoteViewControler.currentNote = notesInWeb[indexPath.row]
+            }
             navigationController?.pushViewController(currentNoteViewControler, animated: true)
         }
     }
@@ -199,50 +219,80 @@ extension ListViewController: UITableViewDelegate {
         trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
         let actionDelete = UIContextualAction(style: .destructive, title: nil) {
-            _, _, completion in
-            self.rightButtonNavigationBar.isHidden = false
-            self.notes.remove(at: indexPath.row)
+            _, _, _ in
+            if indexPath.section == Constants.notesInDeviceNumberOfSection {
+                self.notesInDevice.remove(at: indexPath.row)
+            } else { self.notesInWeb.remove(at: indexPath.row) }
             tableView.reloadData()
-            completion(true)
         }
-        actionDelete.image = UIImage(named: Constants.swipeDeleteIconImageName)
-        actionDelete.backgroundColor = Constants.backgroundColor
+
+        let imageConfig = UIImage.SymbolConfiguration(
+            pointSize: Constants.swipeDeleteNoteImagePointSize,
+            weight: .bold,
+            scale: .large
+        )
+        actionDelete.image = UIImage(
+            systemName: Constants.swipeDeleteNoteImageSystemName,
+            withConfiguration: imageConfig
+        )?.withTintColor(
+            .white,
+            renderingMode: .alwaysTemplate
+        ).addBackgroundCircle(.systemRed)
+
+        actionDelete.backgroundColor = traitCollection.userInterfaceStyle == .dark ?
+        Constants.backgroundColorDark : Constants.backgroundColorLight
+        actionDelete.title = Constants.swipeDeleteNoteTitle
+
         let actions = UISwipeActionsConfiguration(actions: [actionDelete])
         actions.performsFirstActionWithFullSwipe = false
         return actions
     }
 }
-// MARK: - NoteViewControllerDelegate methods
-
+// MARK: - NoteViewControllerDelegate methods (Update data)
 extension ListViewController: NoteViewControllerDelegate {
     func noteWasChanged(with note: Note) {
-        if let item = self.notes.firstIndex(
-            where: {
-                $0.id == note.id
-            }
-        ) {
-            self.notes[item].title = note.title
-            self.notes[item].text = note.text
-            self.notes[item].date = Date()
+        if let item = self.notesInDevice.firstIndex( where: { $0.id == note.id }) {
+            self.notesInDevice[item].title = note.title
+            self.notesInDevice[item].text = note.text
+            self.notesInDevice[item].date = Date()
         } else {
-            self.notes.append(note)
+            if let item = self.notesInWeb.firstIndex( where: { $0.id == note.id }) {
+                self.notesInWeb[item].title = note.title
+                self.notesInWeb[item].text = note.text
+                self.notesInWeb[item].date = Date()
+            } else { self.notesInDevice.append(note) }
         }
     }
 }
-
 // MARK: - Private methods
-
 private extension ListViewController {
-    // MARK: Data storage methods
-
-    func loadNotes() {
-        self.notes = storage.loadDate(key: Constants.dataStorageKey) ?? []
-    }
-
+    // MARK: CRuD methods
     func createNote() {
         let newNoteViewController = NoteViewController()
         newNoteViewController.delegate = self
         navigationController?.pushViewController(newNoteViewController, animated: true)
+    }
+
+    func readNotes() {
+        notesInDevice = storageWorker.loadDate(key: Constants.dataStorageKey) ?? []
+        webWorker.fetch { [weak self] notes in
+            guard let notes = notes else { return }
+            if notes.isEmpty == false {
+                for note in notes {
+                    let newNote = Note(
+                        title: note.title,
+                        text: note.text,
+                        date: Date(
+                            timeIntervalSince1970: TimeInterval(
+                                    note.date ?? Int64(Date().timeIntervalSince1970)
+                            )
+                        )
+                    )
+                    self?.notesInWeb.append(newNote)
+                }
+                self?.tableView.reloadData()
+            }
+        }
     }
 
     func deleteNote() {
@@ -254,18 +304,23 @@ private extension ListViewController {
             )
             return
         }
-
         var deleteNotes = [Note]()
         for indexPath in selectedRows {
-            deleteNotes.append(notes[indexPath.row])
-        }
-
-        for deleteNote in deleteNotes {
-            if let index = notes.firstIndex(of: deleteNote) {
-                notes.remove(at: index)
+            if indexPath.section == Constants.notesInDeviceNumberOfSection {
+                deleteNotes.append(notesInDevice[indexPath.row])
+            }
+            if indexPath.section == Constants.notesInWebNumberOfSection {
+                deleteNotes.append(notesInWeb[indexPath.row])
             }
         }
-
+        for deleteNote in deleteNotes {
+            if let index = notesInDevice.firstIndex(of: deleteNote) {
+                notesInDevice.remove(at: index)
+            }
+            if let index = notesInWeb.firstIndex(of: deleteNote) {
+                notesInWeb.remove(at: index)
+            }
+        }
         tableView.beginUpdates()
         tableView.deleteRows(at: selectedRows, with: .automatic)
         tableView.endUpdates()
@@ -278,7 +333,7 @@ private extension ListViewController {
             object: nil,
             queue: nil
         ) { _ in
-            self.storage.save(notes: self.notes, key: Constants.dataStorageKey)
+            self.storageWorker.save(notes: self.notesInDevice, key: Constants.dataStorageKey)
         }
     }
 
@@ -289,21 +344,29 @@ private extension ListViewController {
             object: nil
         )
     }
-
     // MARK: Configure UI
-
     func configureUI() {
-        self.navigationItem.titleView = titleLabel
+        navigationItem.titleView = titleLabel
         setupViews()
+        changeColorUI(to: traitCollection.userInterfaceStyle)
         setNavigationBar()
         setConstraints()
     }
 
     func setupViews() {
-        view.backgroundColor = Constants.backgroundColor
         view.addSubview(backgroundView)
         backgroundView.addSubview(tableView)
         view.addSubview(createOrDeleteNoteButton)
+    }
+
+    func changeColorUI(to currentUserInterfaceStyle: UIUserInterfaceStyle) {
+        if currentUserInterfaceStyle == .dark {
+            view.backgroundColor = Constants.backgroundColorDark
+            titleLabel.textColor = Constants.titleLabelTextColorDark
+        } else {
+            view.backgroundColor = Constants.backgroundColorLight
+            titleLabel.textColor = Constants.titleLabelTextColorLight
+        }
     }
 
     func setNavigationBar() {
@@ -315,9 +378,9 @@ private extension ListViewController {
         tableView.delegate = self
         tableView.dataSource = self
     }
-
-    // MARK: Set constraint
-
+}
+// MARK: - Set constraint
+extension ListViewController {
     func setConstraints() {
         if #available(iOS 11, *) {
             let guide = view.safeAreaLayoutGuide
@@ -371,16 +434,14 @@ private extension ListViewController {
     }
 }
 // MARK: - Constants
-
 extension ListViewController {
     private enum Constants {
         // MARK: Data storage constants
-
         static let dataStorageKey = "notes"
 
         // MARK: UI Properties constants
-
-        static let backgroundColor = UIColor(red: 0.976, green: 0.98, blue: 0.996, alpha: 1)
+        static let backgroundColorLight = UIColor(red: 0.976, green: 0.98, blue: 0.996, alpha: 1)
+        static let backgroundColorDark = UIColor.darkGray
 
         static let chooseRightButtonNavigationBarTitle = "Выбрать"
         static let doneRightButtonNavigationBarTitle = "Готово"
@@ -389,7 +450,8 @@ extension ListViewController {
 
         static let titleLabelFrame = CGRect(x: 0, y: 0, width: 130, height: 22)
         static let titleLabelTextFont = UIFont(name: "SFProText-Semibold", size: 17)
-        static let titleLabelTextColor = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
+        static let titleLabelTextColorLight = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
+        static let titleLabelTextColorDark = UIColor.white
         static let titleLabelText = "Заметки"
 
         static let frameCreateOrDeleteNoteButton = CGRect(x: 0, y: 0, width: 50, height: 50)
@@ -398,9 +460,16 @@ extension ListViewController {
         static let imageDeleteForCreateOrDeleteNoteButton = "buttonRemove.pdf"
         static let transitionButtonAnimationDuration = 0.3
 
-        static let swipeDeleteIconImageName = "deleteIcon.png"
+        static let swipeDeleteNoteTitle = "Удалить"
+        static let swipeDeleteNoteImageSystemName = "trash"
+        static let swipeDeleteNoteImagePointSize: CGFloat = 20.0
 
         static let heightForRowAt = 90.0
+        static let numbersOfSections = 2
+        static let notesInDeviceNumberOfSection = 0
+        static let notesInDeviceTitleSection = "Заметки на устройстве"
+        static let notesInWebNumberOfSection = 1
+        static let notesInWebTitleSection = "Заметки из сети"
 
         static let titleAlert = "Предупреждение"
         static let messageAlertNoteNotChecked = "Вы не выбрали ни одной заметки"
@@ -408,7 +477,6 @@ extension ListViewController {
         static let titleOkButtonAlert = "OK"
 
         // MARK: Animations constants
-
         static let buttonAnimationWithDuration = 1.5
         static let buttonAnimationDelay = 0.2
         static let buttonAnimationUsingSpringWithDamping = 0.1
@@ -420,7 +488,6 @@ extension ListViewController {
         static let buttonAnimationDurationDown = 0.15
 
         // MARK: Constraints constants
-
         static let tableViewTopAnchor: CGFloat = 16
         static let tableViewLeadingAnchor: CGFloat = 10
         static let tableViewTrailingAnchor: CGFloat = -10

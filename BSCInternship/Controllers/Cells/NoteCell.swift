@@ -22,7 +22,6 @@ class NoteCell: UITableViewCell {
 
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.textColor = Constants.titleLabelTextColor
         label.font = Constants.titleLabelTextFont
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -38,7 +37,6 @@ class NoteCell: UITableViewCell {
 
     private let dateLabel: UILabel = {
         let label = UILabel()
-        label.textColor = Constants.dateLabelTextColor
         label.font = Constants.dateLabelTextFont
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -68,9 +66,8 @@ class NoteCell: UITableViewCell {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        self.layer.cornerRadius = Constants.viewCornerRadius
+        updateColorUI()
     }
-
     // MARK: - Public methods
 
     func set(with note: Note?) {
@@ -82,18 +79,19 @@ class NoteCell: UITableViewCell {
 
 private extension NoteCell {
     func configureСell() {
-        self.layer.borderColor = Constants.backgroundColor.cgColor
-        self.layer.borderWidth = Constants.viewBorderWidth
-        self.layer.cornerRadius = Constants.viewCornerRadius
-        self.layer.backgroundColor = Constants.viewBgColor.cgColor
-        self.clipsToBounds = true
-        contentView.addSubview(bgView)
-        bgView.addSubview(titleLabel)
-        bgView.addSubview(txtLabel)
-        bgView.addSubview(dateLabel)
+        bgView.layer.borderWidth = Constants.viewBorderWidth
+        bgView.layer.cornerRadius = Constants.viewCornerRadius
+        backgroundColor = .clear
+        backgroundView = bgView
         let selectedBGView = UIView()
+        selectedBackgroundView = selectedBGView
         selectedBGView.backgroundColor = .clear
-        self.selectedBackgroundView = selectedBGView
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(txtLabel)
+        contentView.addSubview(dateLabel)
+        contentView.backgroundColor = .clear
+        clipsToBounds = true
+        updateColorUI()
     }
 
     func updateData() {
@@ -102,24 +100,32 @@ private extension NoteCell {
         txtLabel.text = note?.text
     }
 
+    func updateColorUI() {
+        if traitCollection.userInterfaceStyle == .dark {
+            bgView.layer.borderColor = Constants.backgroundColorDark.cgColor
+            bgView.layer.backgroundColor = Constants.viewBgColorDark.cgColor
+            titleLabel.textColor = Constants.titleLabelTextColorDark
+            dateLabel.textColor = Constants.dateLabelTextColorDark
+        } else {
+            bgView.layer.borderColor = Constants.backgroundColorLight.cgColor
+            bgView.layer.backgroundColor = Constants.viewBgColorLight.cgColor
+            titleLabel.textColor = Constants.titleLabelTextColorLight
+            dateLabel.textColor = Constants.dateLabelTextColorLight
+        }
+    }
+
     func setConstraints() {
         NSLayoutConstraint.activate([
-            bgView.topAnchor.constraint(equalTo: self.topAnchor),
-            bgView.widthAnchor.constraint(equalTo: self.widthAnchor),
-            bgView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
-        ])
-
-        NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(
-                equalTo: bgView.topAnchor,
+                equalTo: contentView.topAnchor,
                 constant: Constants.titleLabelTopAnchor
             ),
             titleLabel.leadingAnchor.constraint(
-                equalTo: bgView.leadingAnchor,
+                equalTo: contentView.leadingAnchor,
                 constant: Constants.titleLabelLeadingAnchor
             ),
             titleLabel.trailingAnchor.constraint(
-                equalTo: bgView.trailingAnchor,
+                equalTo: contentView.trailingAnchor,
                 constant: Constants.titleLabelTrailingAnchor
             )
         ])
@@ -130,26 +136,26 @@ private extension NoteCell {
                 constant: Constants.txtLabelTopAnchor
             ),
             txtLabel.leadingAnchor.constraint(
-                equalTo: bgView.leadingAnchor,
+                equalTo: contentView.leadingAnchor,
                 constant: Constants.txtLabelLeadingAnchor
             ),
             txtLabel.trailingAnchor.constraint(
-                equalTo: bgView.trailingAnchor,
+                equalTo: contentView.trailingAnchor,
                 constant: Constants.txtLabelTrailingAnchor
             )
         ])
 
         NSLayoutConstraint.activate([
             dateLabel.leadingAnchor.constraint(
-                equalTo: bgView.leadingAnchor,
+                equalTo: contentView.leadingAnchor,
                 constant: Constants.dateLabelLeadingAnchor
             ),
             dateLabel.trailingAnchor.constraint(
-                equalTo: bgView.trailingAnchor,
+                equalTo: contentView.trailingAnchor,
                 constant: Constants.dateLabelTrailingAnchor
             ),
             dateLabel.bottomAnchor.constraint(
-                equalTo: bgView.bottomAnchor,
+                equalTo: contentView.bottomAnchor,
                 constant: Constants.dateLabelTopBottom
             )
         ])
@@ -175,19 +181,24 @@ extension NoteCell {
 
         // MARK: UI Constant properties
 
-        static let backgroundColor = UIColor(red: 0.976, green: 0.98, blue: 0.996, alpha: 1)
+        static let backgroundColorLight = UIColor(red: 0.976, green: 0.98, blue: 0.996, alpha: 1)
+        static let backgroundColorDark = UIColor.darkGray
 
-        static let viewBgColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
+        static let viewBgColorLight = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
+        static let viewBgColorDark = UIColor.black
+
         static let viewCornerRadius: CGFloat = 14
         static let viewBorderWidth: CGFloat = 2
 
-        static let titleLabelTextColor = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
+        static let titleLabelTextColorLight = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
+        static let titleLabelTextColorDark = UIColor.white
         static let titleLabelTextFont = UIFont(name: "SFProText-Medium", size: 16)
 
         static let txtLabelTextColor = UIColor(red: 0.675, green: 0.675, blue: 0.675, alpha: 1)
         static let txtLabelTextFont = UIFont(name: "SFProText-Medium", size: 10)
 
-        static let dateLabelTextColor = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
+        static let dateLabelTextColorLight = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
+        static let dateLabelTextColorDark = UIColor.white
         static let dateLabelTextFont = UIFont(name: "SFProText-Medium", size: 10)
 
         // MARK: String constants

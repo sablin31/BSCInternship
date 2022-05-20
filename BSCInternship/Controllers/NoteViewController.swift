@@ -55,6 +55,7 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
 
     private let noteTextView: UITextView = {
         let textView = UITextView()
+        textView.backgroundColor = .clear
         textView.font = Constants.noteTextViewFont
         textView.textAlignment = .left
         textView.showsVerticalScrollIndicator = false
@@ -86,9 +87,17 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = Constants.backgroundColor
         configureUI()
         registerKeyboardNotification()
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if #available(iOS 13.0, *) {
+            if self.traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+                changeColorUI(to: traitCollection.userInterfaceStyle)
+            }
+        }
     }
 
     @objc override func keyboardWillShow(notification: Notification) {
@@ -148,6 +157,7 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
 private extension NoteViewController {
     func configureUI() {
         setupViews()
+        changeColorUI(to: traitCollection.userInterfaceStyle)
         setNavigationBar()
         setConstraints()
         setupDelegate()
@@ -176,6 +186,16 @@ private extension NoteViewController {
         backgroundView.addSubview(titleTextField)
         backgroundView.addSubview(scrollView)
         scrollView.addSubview(noteTextView)
+    }
+
+    func changeColorUI(to currentUserInterfaceStyle: UIUserInterfaceStyle) {
+        if currentUserInterfaceStyle == .dark {
+            view.backgroundColor = Constants.backgroundColorDark
+            titleTextField.textColor = Constants.titleTextFieldColorDark
+        } else {
+            view.backgroundColor = Constants.backgroundColorLight
+            titleTextField.textColor = Constants.titleTextFieldColorLight
+        }
     }
 
     func setupDelegate() {
@@ -285,7 +305,8 @@ extension NoteViewController {
     private enum Constants {
         // MARK: UI Properties constants
 
-        static let backgroundColor = UIColor(red: 0.976, green: 0.98, blue: 0.996, alpha: 1)
+        static let backgroundColorLight = UIColor(red: 0.976, green: 0.98, blue: 0.996, alpha: 1)
+        static let backgroundColorDark = UIColor.darkGray
 
         static let backButtonNavigationBarImageSystemName = "chevron.backward"
         static let doneButtonNavigationBarTitle = "Готово"
@@ -296,6 +317,8 @@ extension NoteViewController {
         static let dateLabelTextFont = UIFont(name: "SFProText-Medium", size: 16)
         static let dateLabelTextColor = UIColor(red: 0.675, green: 0.675, blue: 0.675, alpha: 1)
 
+        static let titleTextFieldColorLight = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
+        static let titleTextFieldColorDark = UIColor.white
         static let titleTextFieldPlaceholder = "Введите название"
         static let titleTextFieldFont = UIFont(name: "SFProText-Medium", size: 24)
 

@@ -1,5 +1,5 @@
 //
-//  DataStorage.swift
+//  WorkerStorage.swift
 //  BSCInternship
 //
 //  Created by Алексей Саблин on 27.03.2022.
@@ -7,21 +7,19 @@
 
 import Foundation
 
-// MARK: - Save data to UserDefaults
+// MARK: - Data in UserDefaults
 
-class DataStorage {
+class WorkerStorage {
+    // MARK: - Private proterties
+
     private var storage = UserDefaults.standard
+    // MARK: - Public Methods
 
     func loadDate(key: String) -> [Note]? {
         var notes: [Note]?
-        // Read Data from UserDefaults
         if let data = storage.data(forKey: key) {
             do {
-                // Create JSON Decoder
-                let decoder = JSONDecoder()
-
-                // Decode Note
-                notes = try decoder.decode([Note].self, from: data)
+                notes = try JSONDecoder().decode([Note].self, from: data)
             } catch {
                 print("Unable to Decode Note (\(error))")
             }
@@ -31,13 +29,7 @@ class DataStorage {
 
     func save(notes: [Note], key: String) {
         do {
-            // Create JSON Encoder
-            let encoder = JSONEncoder()
-
-            // Encode Note
-            let data = try encoder.encode(notes)
-
-            // Write Data to UserDefaults
+            let data = try JSONEncoder().encode(notes)
             storage.set(data, forKey: key)
         } catch {
             print("Unable to Encode Note (\(error))")
