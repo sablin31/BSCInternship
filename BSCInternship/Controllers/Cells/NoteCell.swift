@@ -7,6 +7,8 @@
 
 import UIKit
 
+// MARK: - NoteCell
+
 class NoteCell: UITableViewCell {
     // MARK: - Properties
 
@@ -41,6 +43,12 @@ class NoteCell: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+
+    private let userShareIconImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
     // MARK: - Init
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -59,9 +67,7 @@ class NoteCell: UITableViewCell {
         titleLabel.text = nil
         dateLabel.text = nil
         txtLabel.text = nil
-        titleLabel.text = note?.title ?? " "
-        dateLabel.text = note?.date.toString(dateFormat: Constants.dateFormat)
-        txtLabel.text = note?.text
+        userShareIconImageView.image = nil
     }
 
     override func layoutSubviews() {
@@ -89,6 +95,7 @@ private extension NoteCell {
         contentView.addSubview(titleLabel)
         contentView.addSubview(txtLabel)
         contentView.addSubview(dateLabel)
+        contentView.addSubview(userShareIconImageView)
         contentView.backgroundColor = .clear
         clipsToBounds = true
         updateColorUI()
@@ -98,6 +105,11 @@ private extension NoteCell {
         titleLabel.text = note?.title ?? " "
         dateLabel.text = note?.date.toString(dateFormat: Constants.dateFormat)
         txtLabel.text = note?.text
+        if let userShareIcon = note?.userShareIcon {
+            userShareIconImageView.loadFrom(URLAddress: userShareIcon)
+        } else {
+            userShareIconImageView.image = nil
+        }
     }
 
     func updateColorUI() {
@@ -159,6 +171,19 @@ private extension NoteCell {
                 constant: Constants.dateLabelTopBottom
             )
         ])
+
+        NSLayoutConstraint.activate([
+            userShareIconImageView.heightAnchor.constraint(equalToConstant: Constants.userShareIconImageViewHeight),
+            userShareIconImageView.widthAnchor.constraint(equalToConstant: Constants.userShareIconImageViewWidth),
+            userShareIconImageView.trailingAnchor.constraint(
+                equalTo: contentView.trailingAnchor,
+                constant: Constants.userShareIconImageViewTrailingAnchor
+            ),
+            userShareIconImageView.bottomAnchor.constraint(
+                equalTo: contentView.bottomAnchor,
+                constant: Constants.userShareIconImageViewBottomAnchor
+            )
+        ])
     }
 }
 // MARK: - Constants
@@ -178,6 +203,9 @@ extension NoteCell {
         static let dateLabelLeadingAnchor: CGFloat = 16
         static let dateLabelTrailingAnchor: CGFloat = 274
         static let dateLabelTopBottom: CGFloat = -10
+
+        static let userShareIconImageViewTrailingAnchor: CGFloat = -16
+        static let userShareIconImageViewBottomAnchor: CGFloat = -10
 
         // MARK: UI Constant properties
 
@@ -200,6 +228,9 @@ extension NoteCell {
         static let dateLabelTextColorLight = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
         static let dateLabelTextColorDark = UIColor.white
         static let dateLabelTextFont = UIFont(name: "SFProText-Medium", size: 10)
+
+        static let userShareIconImageViewWidth: CGFloat = 24
+        static let userShareIconImageViewHeight: CGFloat = 24
 
         // MARK: String constants
 
