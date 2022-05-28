@@ -7,7 +7,7 @@
 
 import UIKit
 
-// MARK: - Background Image for delete swipe table view
+// MARK: - Background image for delete swipe table view
 
 extension UIImage {
     func addBackgroundCircle(_ color: UIColor?) -> UIImage? {

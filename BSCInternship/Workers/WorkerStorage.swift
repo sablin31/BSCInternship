@@ -13,6 +13,14 @@ class WorkerStorage {
     // MARK: - Private proterties
 
     private var storage = UserDefaults.standard
+    // MARK: - Init
+    init() {
+        print("WorkerStorage init")
+    }
+
+    deinit {
+        print("WorkerStorage deinit")
+    }
     // MARK: - Public Methods
 
     func loadDate(key: String) -> [Note]? {

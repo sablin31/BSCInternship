@@ -80,8 +80,18 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
     }()
     // MARK: - Init
 
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nil, bundle: nil)
+        print("NoteViewController init")
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     deinit {
         removeKeyboardNotification()
+        print("NoteViewController deinit")
     }
     // MARK: - Inheritance
 
@@ -209,7 +219,7 @@ private extension NoteViewController {
             currentNote?.text = text
             currentNote?.date = Date()
         } else {
-            currentNote = Note(title: title, text: text)
+            currentNote = Note(title: title, text: text, userShareIcon: nil)
         }
         if let currentNote = currentNote {
             delegate?.noteWasChanged(with: currentNote)
