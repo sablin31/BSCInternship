@@ -17,7 +17,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     ) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
 
-        let startingViewController = ListViewController()
+        let startingViewController = ModuleBuilder.createListNotesModule()
         let navViewController = UINavigationController(rootViewController: startingViewController)
         window = UIWindow(windowScene: windowScene)
 

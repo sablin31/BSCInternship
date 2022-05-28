@@ -6,7 +6,6 @@
 //
 
 import UIKit
-
 // MARK: - ListViewController (RootView Controller)
 
 final class ListViewController: UIViewController {
