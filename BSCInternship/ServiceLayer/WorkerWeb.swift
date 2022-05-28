@@ -1,13 +1,6 @@
-//
-//  WorkerStorage.swift
-//  BSCInternship
-//
-//  Created by Алексей Саблин on 16.05.2022.
-//
-
 import Foundation
 
-// MARK: - Data in JSON
+// MARK: - Data from JSON
 
 class WorkerWeb {
     // MARK: - Private proterties
@@ -22,11 +15,6 @@ class WorkerWeb {
 
     init(session: URLSession = URLSession(configuration: .default)) {
         self.session = session
-        print("WorkerWeb is init")
-    }
-
-    deinit {
-        print("WorkerWeb is deinit")
     }
     // MARK: - Public Methods
 
@@ -50,8 +38,10 @@ class WorkerWeb {
             .resume()
         } catch ErrorList.urlNotFound {
             print("URL is not found")
+            completion(nil)
         } catch {
             print("Unknown error")
+            completion(nil)
         }
     }
 }

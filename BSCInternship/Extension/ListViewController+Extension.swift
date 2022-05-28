@@ -9,7 +9,7 @@ import UIKit
 
 // MARK: - UITableViewDelegate methods
 
-extension ListViewController: UITableViewDelegate {
+extension ListNotesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if tableView.isEditing == false {
             let currentNoteViewControler = NoteViewController()
@@ -59,7 +59,7 @@ extension ListViewController: UITableViewDelegate {
 }
 // MARK: - UITableViewDataSource methods
 
-extension ListViewController: UITableViewDataSource {
+extension ListNotesViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int { return Constants.numbersOfSections }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -91,25 +91,25 @@ extension ListViewController: UITableViewDataSource {
     }
 }
 // MARK: - NoteViewControllerDelegate methods (Update data)
-
-extension ListViewController: NoteViewControllerDelegate {
-    func noteWasChanged(with note: Note) {
-        if let item = self.notesInDevice.firstIndex( where: { $0.id == note.id }) {
-            self.notesInDevice[item].title = note.title
-            self.notesInDevice[item].text = note.text
-            self.notesInDevice[item].date = Date()
-        } else {
-            if let item = self.notesInWeb.firstIndex( where: { $0.id == note.id }) {
-                self.notesInWeb[item].title = note.title
-                self.notesInWeb[item].text = note.text
-                self.notesInWeb[item].date = Date()
-            } else { self.notesInDevice.append(note) }
-        }
-    }
-}
+//
+// extension ListNotesViewController: NoteViewControllerDelegate {
+//    func noteWasChanged(with note: Note) {
+//        if let item = self.notesInDevice.firstIndex( where: { $0.id == note.id }) {
+//            self.notesInDevice[item].title = note.title
+//            self.notesInDevice[item].text = note.text
+//            self.notesInDevice[item].date = Date()
+//        } else {
+//            if let item = self.notesInWeb.firstIndex( where: { $0.id == note.id }) {
+//                self.notesInWeb[item].title = note.title
+//                self.notesInWeb[item].text = note.text
+//                self.notesInWeb[item].date = Date()
+//            } else { self.notesInDevice.append(note) }
+//        }
+//    }
+// }
 
 // MARK: - Constants
-extension ListViewController {
+extension ListNotesViewController {
     private enum Constants {
         // MARK: UI Properties constants
         static let backgroundColorLight = UIColor(red: 0.976, green: 0.98, blue: 0.996, alpha: 1)

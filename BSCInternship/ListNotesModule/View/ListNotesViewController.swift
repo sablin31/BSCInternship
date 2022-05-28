@@ -116,7 +116,7 @@ final class ListNotesViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        spinner.startAnimating()
+        // spinner.startAnimating()
         readNotes()
         configureUI()
         setupDelegate()
@@ -163,8 +163,6 @@ final class ListNotesViewController: UIViewController {
             usingSpringWithDamping: Constants.buttonAnimationUsingSpringWithDamping,
             initialSpringVelocity: Constants.buttonAnimationInitialSpringVelocity,
             options: [],
-            // Используем слабую ссылку чтобы разорвать сильную связь с анимацией
-            // если не использовать будет утечка памяти
             animations: { [weak self] in guard let self = self else { return }
                 self.createOrDeleteNoteButton.bounds.origin.y -= Constants.buttonAnimatioPosition
             },
@@ -186,67 +184,68 @@ final class ListNotesViewController: UIViewController {
 private extension ListNotesViewController {
     // MARK: CRuD methods
     func createNote() {
-        let newNoteViewController = NoteViewController()
-        newNoteViewController.delegate = self
-        navigationController?.pushViewController(newNoteViewController, animated: true)
+        print("createNewNote")
+//        let newNoteViewController = NoteViewController()
+//        newNoteViewController.delegate = self
+//        navigationController?.pushViewController(newNoteViewController, animated: true)
     }
-
-    func readNotes() {
-        notesInDevice = storageWorker.loadDate(key: Constants.dataStorageKey) ?? []
-        // Возможна утечка памяти, если будет сильная ссылка
-        webWorker.fetch { [weak self] notes in
-            guard let notes = notes else { return }
-            if notes.isEmpty == false {
-                for note in notes {
-                    let newNote = Note(
-                        title: note.title,
-                        text: note.text,
-                        userShareIcon: note.userShareIcon,
-                        date: Date(
-                            timeIntervalSince1970: TimeInterval(
-                                    note.date ?? Int64(Date().timeIntervalSince1970)
-                            )
-                        )
-                    )
-                    self?.notesInWeb.append(newNote)
-                }
-                self?.spinner.removeFromSuperview()
-                self?.tableView.reloadData()
-            }
-        }
-    }
-
-    func deleteNote() {
-        guard let selectedRows = tableView.indexPathsForSelectedRows else {
-            showAlert(
-                titleMessage: Constants.titleAlert,
-                message: Constants.messageAlertNoteNotChecked,
-                titleButton: Constants.titleOkButtonAlert
-            )
-            return
-        }
-        var deleteNotes = [Note]()
-        for indexPath in selectedRows {
-            if indexPath.section == Constants.notesInDeviceNumberOfSection {
-                deleteNotes.append(notesInDevice[indexPath.row])
-            }
-            if indexPath.section == Constants.notesInWebNumberOfSection {
-                deleteNotes.append(notesInWeb[indexPath.row])
-            }
-        }
-        for deleteNote in deleteNotes {
-            if let index = notesInDevice.firstIndex(of: deleteNote) {
-                notesInDevice.remove(at: index)
-            }
-            if let index = notesInWeb.firstIndex(of: deleteNote) {
-                notesInWeb.remove(at: index)
-            }
-        }
-        tableView.beginUpdates()
-        tableView.deleteRows(at: selectedRows, with: .automatic)
-        tableView.endUpdates()
-        setEditing(false, animated: true)
-    }
+//
+//    func readNotes() {
+//        notesInDevice = storageWorker.loadDate(key: Constants.dataStorageKey) ?? []
+//        // Возможна утечка памяти, если будет сильная ссылка
+//        webWorker.fetch { [weak self] notes in
+//            guard let notes = notes else { return }
+//            if notes.isEmpty == false {
+//                for note in notes {
+//                    let newNote = Note(
+//                        title: note.title,
+//                        text: note.text,
+//                        userShareIcon: note.userShareIcon,
+//                        date: Date(
+//                            timeIntervalSince1970: TimeInterval(
+//                                    note.date ?? Int64(Date().timeIntervalSince1970)
+//                            )
+//                        )
+//                    )
+//                    self?.notesInWeb.append(newNote)
+//                }
+//                self?.spinner.removeFromSuperview()
+//                self?.tableView.reloadData()
+//            }
+//        }
+//    }
+//
+//    func deleteNote() {
+//        guard let selectedRows = tableView.indexPathsForSelectedRows else {
+//            showAlert(
+//                titleMessage: Constants.titleAlert,
+//                message: Constants.messageAlertNoteNotChecked,
+//                titleButton: Constants.titleOkButtonAlert
+//            )
+//            return
+//        }
+//        var deleteNotes = [Note]()
+//        for indexPath in selectedRows {
+//            if indexPath.section == Constants.notesInDeviceNumberOfSection {
+//                deleteNotes.append(notesInDevice[indexPath.row])
+//            }
+//            if indexPath.section == Constants.notesInWebNumberOfSection {
+//                deleteNotes.append(notesInWeb[indexPath.row])
+//            }
+//        }
+//        for deleteNote in deleteNotes {
+//            if let index = notesInDevice.firstIndex(of: deleteNote) {
+//                notesInDevice.remove(at: index)
+//            }
+//            if let index = notesInWeb.firstIndex(of: deleteNote) {
+//                notesInWeb.remove(at: index)
+//            }
+//        }
+//        tableView.beginUpdates()
+//        tableView.deleteRows(at: selectedRows, with: .automatic)
+//        tableView.endUpdates()
+//        setEditing(false, animated: true)
+//    }
 
     func registerDidEnterBackgroundNotification() {
         NotificationCenter.default.addObserver(
@@ -254,7 +253,7 @@ private extension ListNotesViewController {
             object: nil,
             queue: nil
         ) { _ in
-            self.storageWorker.save(notes: self.notesInDevice, key: Constants.dataStorageKey)
+            // self.storageWorker.save(notes: self.notesInDevice, key: Constants.dataStorageKey)
         }
     }
 
