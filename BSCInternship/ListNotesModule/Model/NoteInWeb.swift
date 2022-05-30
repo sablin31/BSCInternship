@@ -1,5 +1,5 @@
 //
-//  Note.swift
+//  NoteInWeb.swift
 //  BSCInternship
 //
 //  Created by Алексей Саблин on 16.05.2022.
@@ -10,7 +10,7 @@ import Foundation
 // MARK: - Note in web model
 
 struct NoteInWeb: Decodable {
-    // MARK: - Public Properties
+    // MARK: - Public properties
 
     let title: String?
     let text: String?

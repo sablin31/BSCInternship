@@ -7,50 +7,50 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		700D9B2A283F97BB0026AE09 /* ListViewController+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 700D9B29283F97BB0026AE09 /* ListViewController+Extension.swift */; };
 		700D9B2C283F9ED30026AE09 /* UIImageView+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 700D9B2B283F9ED30026AE09 /* UIImageView+Extension.swift */; };
 		70168A8C280213DA003BDC7C /* SFProText-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 70168A8B280213DA003BDC7C /* SFProText-Medium.ttf */; };
 		70168A902802F5F1003BDC7C /* Date+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70168A8F2802F5F1003BDC7C /* Date+Extension.swift */; };
 		70415399282C3C7C00DCEE26 /* UIImage+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70415398282C3C7C00DCEE26 /* UIImage+Extension.swift */; };
 		7044B413280C182600573C50 /* ViewController+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7044B412280C182600573C50 /* ViewController+Extension.swift */; };
+		704AC2342844C29D003B10B8 /* DetailNotePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704AC2332844C29D003B10B8 /* DetailNotePresenter.swift */; };
+		704AC2382844E4FF003B10B8 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704AC2372844E4FF003B10B8 /* Router.swift */; };
 		70543CC12832BCDA00D41D59 /* NoteInWeb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70543CC02832BCDA00D41D59 /* NoteInWeb.swift */; };
 		70579583280EBA6C001E098D /* NoteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70579582280EBA6C001E098D /* NoteCell.swift */; };
 		7088082D283181B50074A626 /* WorkerWeb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7088082C283181B50074A626 /* WorkerWeb.swift */; };
 		70A0980E27F032F200C8A165 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A0980D27F032F200C8A165 /* AppDelegate.swift */; };
 		70A0981027F032F200C8A165 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A0980F27F032F200C8A165 /* SceneDelegate.swift */; };
-		70A0981227F032F200C8A165 /* NoteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A0981127F032F200C8A165 /* NoteViewController.swift */; };
+		70A0981227F032F200C8A165 /* DetailNoteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A0981127F032F200C8A165 /* DetailNoteViewController.swift */; };
 		70A0981727F032F300C8A165 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 70A0981627F032F300C8A165 /* Assets.xcassets */; };
 		70A0981A27F032F300C8A165 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 70A0981827F032F300C8A165 /* LaunchScreen.storyboard */; };
 		70A0982527F0344200C8A165 /* WorkerStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A0982427F0344200C8A165 /* WorkerStorage.swift */; };
-		70AA2F9C2842BB970030A0CE /* ModuleBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70AA2F9B2842BB970030A0CE /* ModuleBuilder.swift */; };
+		70AA2F9C2842BB970030A0CE /* AssemblyModuleBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70AA2F9B2842BB970030A0CE /* AssemblyModuleBuilder.swift */; };
 		70AA2FA22842BD800030A0CE /* ListNotesPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70AA2FA12842BD800030A0CE /* ListNotesPresenter.swift */; };
-		70AA2FA42842C0440030A0CE /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70AA2FA32842C0440030A0CE /* File.swift */; };
 		70BB37BB27F637D300BACBBF /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70BB37BA27F637D300BACBBF /* Note.swift */; };
 		70C415D127FF68830088C77E /* ListNotesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C415D027FF68830088C77E /* ListNotesViewController.swift */; };
 		70C415D5280036280088C77E /* SFProText-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 70C415D4280036280088C77E /* SFProText-Semibold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		700D9B29283F97BB0026AE09 /* ListViewController+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListViewController+Extension.swift"; sourceTree = "<group>"; };
 		700D9B2B283F9ED30026AE09 /* UIImageView+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImageView+Extension.swift"; sourceTree = "<group>"; };
 		70168A8B280213DA003BDC7C /* SFProText-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFProText-Medium.ttf"; sourceTree = "<group>"; };
 		70168A8F2802F5F1003BDC7C /* Date+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extension.swift"; sourceTree = "<group>"; };
 		70415398282C3C7C00DCEE26 /* UIImage+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extension.swift"; sourceTree = "<group>"; };
 		7044B412280C182600573C50 /* ViewController+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+Extension.swift"; sourceTree = "<group>"; };
+		704AC2332844C29D003B10B8 /* DetailNotePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailNotePresenter.swift; sourceTree = "<group>"; };
+		704AC2372844E4FF003B10B8 /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
 		70543CC02832BCDA00D41D59 /* NoteInWeb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteInWeb.swift; sourceTree = "<group>"; };
 		70579582280EBA6C001E098D /* NoteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteCell.swift; sourceTree = "<group>"; };
 		7088082C283181B50074A626 /* WorkerWeb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkerWeb.swift; sourceTree = "<group>"; };
 		70A0980A27F032F200C8A165 /* BSCInternship.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BSCInternship.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		70A0980D27F032F200C8A165 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		70A0980F27F032F200C8A165 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		70A0981127F032F200C8A165 /* NoteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteViewController.swift; sourceTree = "<group>"; };
+		70A0981127F032F200C8A165 /* DetailNoteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailNoteViewController.swift; sourceTree = "<group>"; };
 		70A0981627F032F300C8A165 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		70A0981927F032F300C8A165 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		70A0981B27F032F300C8A165 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		70A0982427F0344200C8A165 /* WorkerStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkerStorage.swift; sourceTree = "<group>"; };
-		70AA2F9B2842BB970030A0CE /* ModuleBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleBuilder.swift; sourceTree = "<group>"; };
+		70AA2F9B2842BB970030A0CE /* AssemblyModuleBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssemblyModuleBuilder.swift; sourceTree = "<group>"; };
 		70AA2FA12842BD800030A0CE /* ListNotesPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListNotesPresenter.swift; sourceTree = "<group>"; };
-		70AA2FA32842C0440030A0CE /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		70BB37BA27F637D300BACBBF /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
 		70C415D027FF68830088C77E /* ListNotesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListNotesViewController.swift; sourceTree = "<group>"; };
 		70C415D4280036280088C77E /* SFProText-Semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SFProText-Semibold.ttf"; sourceTree = "<group>"; };
@@ -75,9 +75,33 @@
 				7044B412280C182600573C50 /* ViewController+Extension.swift */,
 				70415398282C3C7C00DCEE26 /* UIImage+Extension.swift */,
 				700D9B2B283F9ED30026AE09 /* UIImageView+Extension.swift */,
-				700D9B29283F97BB0026AE09 /* ListViewController+Extension.swift */,
 			);
 			path = Extension;
+			sourceTree = "<group>";
+		};
+		704AC2302844AD1A003B10B8 /* DetailNoteModule */ = {
+			isa = PBXGroup;
+			children = (
+				704AC2312844AD2E003B10B8 /* View */,
+				704AC2322844AD36003B10B8 /* Presenter */,
+			);
+			path = DetailNoteModule;
+			sourceTree = "<group>";
+		};
+		704AC2312844AD2E003B10B8 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				70A0981127F032F200C8A165 /* DetailNoteViewController.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		704AC2322844AD36003B10B8 /* Presenter */ = {
+			isa = PBXGroup;
+			children = (
+				704AC2332844C29D003B10B8 /* DetailNotePresenter.swift */,
+			);
+			path = Presenter;
 			sourceTree = "<group>";
 		};
 		70579581280EBA47001E098D /* Cells */ = {
@@ -116,11 +140,12 @@
 		70A0980C27F032F200C8A165 /* BSCInternship */ = {
 			isa = PBXGroup;
 			children = (
-				70AA2F9B2842BB970030A0CE /* ModuleBuilder.swift */,
+				70AA2F9B2842BB970030A0CE /* AssemblyModuleBuilder.swift */,
+				704AC2372844E4FF003B10B8 /* Router.swift */,
 				70AA2F9D2842BC9F0030A0CE /* ListNotesModule */,
+				704AC2302844AD1A003B10B8 /* DetailNoteModule */,
 				7088082B2831817F0074A626 /* ServiceLayer */,
 				70168A8E2802F5DD003BDC7C /* Extension */,
-				70A0982227F0342600C8A165 /* Controllers */,
 				70A0982127F0331D00C8A165 /* SupportingFiles */,
 				70A0981827F032F300C8A165 /* LaunchScreen.storyboard */,
 			);
@@ -139,14 +164,6 @@
 			path = SupportingFiles;
 			sourceTree = "<group>";
 		};
-		70A0982227F0342600C8A165 /* Controllers */ = {
-			isa = PBXGroup;
-			children = (
-				70A0981127F032F200C8A165 /* NoteViewController.swift */,
-			);
-			path = Controllers;
-			sourceTree = "<group>";
-		};
 		70AA2F9D2842BC9F0030A0CE /* ListNotesModule */ = {
 			isa = PBXGroup;
 			children = (
@@ -162,7 +179,6 @@
 			children = (
 				70579581280EBA47001E098D /* Cells */,
 				70C415D027FF68830088C77E /* ListNotesViewController.swift */,
-				70AA2FA32842C0440030A0CE /* File.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -292,15 +308,15 @@
 				70543CC12832BCDA00D41D59 /* NoteInWeb.swift in Sources */,
 				700D9B2C283F9ED30026AE09 /* UIImageView+Extension.swift in Sources */,
 				70BB37BB27F637D300BACBBF /* Note.swift in Sources */,
-				70A0981227F032F200C8A165 /* NoteViewController.swift in Sources */,
+				704AC2342844C29D003B10B8 /* DetailNotePresenter.swift in Sources */,
+				70A0981227F032F200C8A165 /* DetailNoteViewController.swift in Sources */,
 				70C415D127FF68830088C77E /* ListNotesViewController.swift in Sources */,
 				70A0980E27F032F200C8A165 /* AppDelegate.swift in Sources */,
 				7044B413280C182600573C50 /* ViewController+Extension.swift in Sources */,
-				70AA2F9C2842BB970030A0CE /* ModuleBuilder.swift in Sources */,
+				704AC2382844E4FF003B10B8 /* Router.swift in Sources */,
+				70AA2F9C2842BB970030A0CE /* AssemblyModuleBuilder.swift in Sources */,
 				70168A902802F5F1003BDC7C /* Date+Extension.swift in Sources */,
-				70AA2FA42842C0440030A0CE /* File.swift in Sources */,
 				70415399282C3C7C00DCEE26 /* UIImage+Extension.swift in Sources */,
-				700D9B2A283F97BB0026AE09 /* ListViewController+Extension.swift in Sources */,
 				70A0981027F032F200C8A165 /* SceneDelegate.swift in Sources */,
 				7088082D283181B50074A626 /* WorkerWeb.swift in Sources */,
 				70A0982527F0344200C8A165 /* WorkerStorage.swift in Sources */,

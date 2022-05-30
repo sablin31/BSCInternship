@@ -10,7 +10,7 @@ import Foundation
 // MARK: - Note in device model
 
 struct Note: Codable, Identifiable, Equatable {
-    // MARK: - Public Properties
+    // MARK: - Public properties
 
     var id = UUID()
     var title: String?

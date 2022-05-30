@@ -7,40 +7,52 @@
 
 import Foundation
 
+// MARK: - UserDefaultsService protocol
+
+protocol UserDefaultsServiceProtocol {
+    func loadNotes() -> [Note]?
+    func saveNotes(notes: [Note])
+}
 // MARK: - Data in UserDefaults
 
-class WorkerStorage {
-    // MARK: - Private proterties
+class WorkerStorage: UserDefaultsServiceProtocol {
+    // MARK: - Private properties
 
     private var storage = UserDefaults.standard
-    // MARK: - Init
-    init() {
-        print("WorkerStorage init")
-    }
-
-    deinit {
-        print("WorkerStorage deinit")
-    }
     // MARK: - Public Methods
 
-    func loadDate(key: String) -> [Note]? {
+    func loadNotes() -> [Note]? {
         var notes: [Note]?
-        if let data = storage.data(forKey: key) {
+        if let data = storage.data(forKey: Constants.key) {
             do {
                 notes = try JSONDecoder().decode([Note].self, from: data)
             } catch {
-                print("Unable to Decode Note (\(error))")
+                print("\(Constants.errorDecodeDescription) (\(error))")
             }
         }
         return notes
     }
 
-    func save(notes: [Note], key: String) {
+    func saveNotes(notes: [Note]) {
         do {
             let data = try JSONEncoder().encode(notes)
-            storage.set(data, forKey: key)
+            storage.set(data, forKey: Constants.key)
         } catch {
-            print("Unable to Encode Note (\(error))")
+            print(" \(Constants.errorEncodeDescription) (\(error))")
         }
+    }
+}
+// MARK: - Constants
+
+extension WorkerStorage {
+    private enum Constants {
+        // MARK: Data source key
+
+        static let key = "notes"
+
+        // MARK: String constants
+
+        static let errorEncodeDescription = "Unable to Encode Note"
+        static let errorDecodeDescription = "Unable to Decode Note"
     }
 }

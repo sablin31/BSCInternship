@@ -16,12 +16,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         options connectionOptions: UIScene.ConnectionOptions
     ) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
-
-        let startingViewController = ModuleBuilder.createListNotesModule()
-        let navViewController = UINavigationController(rootViewController: startingViewController)
         window = UIWindow(windowScene: windowScene)
+        let navigationController = UINavigationController()
+        let assemblyBuilder = AssemblyModuleBuilder()
+        let router = Router(navigationController: navigationController, assemblyBuilder: assemblyBuilder)
+        router.initialViewController()
 
-        window?.rootViewController = navViewController
+        window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
     }
 }

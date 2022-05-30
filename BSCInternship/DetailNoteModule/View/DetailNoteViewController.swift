@@ -1,23 +1,16 @@
 //
-//  MainViewController.swift
+//  DetailNoteViewController.swift
 //  BSCInternship
 //
 //  Created by Алексей Саблин on 27.03.2022.
 //
 
 import UIKit
-// MARK: - Protocol delegate
 
-protocol NoteViewControllerDelegate: AnyObject {
-    func noteWasChanged(with note: Note)
-}
-// MARK: - ListViewController (SecondView Controller)
-
-class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate {
+class DetailNoteViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate {
     // MARK: - Proterties
 
-    var currentNote: Note?
-    weak var delegate: NoteViewControllerDelegate?
+    var presenter: DetailNotePresenterProtocol?
     // MARK: - UI Properties
 
     private let backgroundView: UIView = {
@@ -80,19 +73,7 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
     }()
     // MARK: - Init
 
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        super.init(nibName: nil, bundle: nil)
-        print("NoteViewController init")
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    deinit {
-        removeKeyboardNotification()
-        print("NoteViewController deinit")
-    }
+    deinit { removeKeyboardNotification() }
     // MARK: - Inheritance
 
     override func viewDidLoad() {
@@ -142,9 +123,9 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
         let title = (titleTextField.text?.isEmpty ?? true) ? nil : titleTextField.text
         let text = (noteTextView.text?.isEmpty ?? true) ? nil : noteTextView.text
         if (title != nil || text != nil) && isEditing {
-            updateModel(title: title, text: text)
+            presenter?.updateNote(title: title, text: text)
         }
-        navigationController?.popViewController(animated: true)
+        presenter?.returnToListNotes()
     }
 
     @objc func rightBarButtonAction() {
@@ -158,13 +139,14 @@ class NoteViewController: UIViewController, UITextViewDelegate, UITextFieldDeleg
                 titleButton: Constants.titleOkButtonAlert
             )
         } else {
-            updateModel(title: title, text: text)
+            presenter?.updateNote(title: title, text: text)
+            dateLabel.text = presenter?.note?.date.toString(dateFormat: Constants.dateFormat)
         }
     }
 }
 // MARK: - Private Methods
 
-private extension NoteViewController {
+private extension DetailNoteViewController {
     func configureUI() {
         setupViews()
         changeColorUI(to: traitCollection.userInterfaceStyle)
@@ -172,17 +154,17 @@ private extension NoteViewController {
         setConstraints()
         setupDelegate()
 
-        dateLabel.text = currentNote?.date.toString(
+        dateLabel.text = presenter?.note?.date.toString(
             dateFormat: Constants.dateFormat
         ) ?? Date().toString(
             dateFormat: Constants.dateFormat
         )
-        titleTextField.text = currentNote?.title
-        noteTextView.text = currentNote?.text
+        titleTextField.text = presenter?.note?.title
+        noteTextView.text = presenter?.note?.text
 
         titleTextField.autocorrectionType = .no
         noteTextView.autocorrectionType = .no
-        if self.currentNote == nil { noteTextView.becomeFirstResponder() }
+        if self.presenter?.note == nil { noteTextView.becomeFirstResponder() }
     }
 
     func setNavigationBar() {
@@ -211,20 +193,6 @@ private extension NoteViewController {
     func setupDelegate() {
         titleTextField.delegate = self
         noteTextView.delegate = self
-    }
-
-    func updateModel(title: String?, text: String?) {
-        if currentNote != nil {
-            currentNote?.title = title
-            currentNote?.text = text
-            currentNote?.date = Date()
-        } else {
-            currentNote = Note(title: title, text: text, userShareIcon: nil)
-        }
-        if let currentNote = currentNote {
-            delegate?.noteWasChanged(with: currentNote)
-            dateLabel.text = currentNote.date.toString(dateFormat: Constants.dateFormat)
-        }
     }
 
     // MARK: Set constraint
@@ -309,9 +277,12 @@ private extension NoteViewController {
         ])
     }
 }
+// MARK: - DetailNoteViewProtocol methods
+
+extension DetailNoteViewController: DetailNoteViewProtocol { }
 // MARK: - Constants
 
-extension NoteViewController {
+extension DetailNoteViewController {
     private enum Constants {
         // MARK: UI Properties constants
 

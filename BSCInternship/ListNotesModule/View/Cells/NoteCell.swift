@@ -1,5 +1,5 @@
 //
-//  NoteCellTableViewCell.swift
+//  NoteCell.swift
 //  BSCInternship
 //
 //  Created by Алексей Саблин on 19.04.2022.
@@ -14,7 +14,7 @@ class NoteCell: UITableViewCell {
 
     static let reuseId = String(describing: NoteCell.self)
     var note: Note?
-    // MARK: - UI Properties
+    // MARK: - UI properties
 
     private let bgView: UIView = {
         let view = UIView()
@@ -207,7 +207,7 @@ extension NoteCell {
         static let userShareIconImageViewTrailingAnchor: CGFloat = -16
         static let userShareIconImageViewBottomAnchor: CGFloat = -10
 
-        // MARK: UI Constant properties
+        // MARK: UI constant properties
 
         static let backgroundColorLight = UIColor(red: 0.976, green: 0.98, blue: 0.996, alpha: 1)
         static let backgroundColorDark = UIColor.darkGray
