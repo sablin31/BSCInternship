@@ -4,20 +4,22 @@
 //
 //  Created by Алексей Саблин on 07.04.2022.
 //
+//  ViewController
 
 import UIKit
 
-// MARK: - ListViewController (RootView Controller)
+protocol ListNotesDisplayLogic: AnyObject {
+    func getNotesInStorage(viewModel: ListNotesModel.GetNotesInStorage.ViewModel)
+    func getNotesInWeb(viewModel: ListNotesModel.GetNotesInWeb.ViewModel)
+    func getAllNotice(viewModel: ListNotesModel.GetModel.ViewModel)
+    func getAllNotesAfterDelete(viewModel: ListNotesModel.DeleteNotes.ViewModel)
+}
 
-final class ListViewController: UIViewController {
+final class ListNotesViewController: UIViewController {
     // MARK: - Public proterties
 
-    var notesInDevice: [Note] = []
-    var notesInWeb: [Note] = []
-    // MARK: - Private proterties
-
-    private let storageWorker = WorkerStorage()
-    private let webWorker = WorkerWeb()
+    var notesModel = NotesModel()
+    var interactor: ListNotesBusinessLogic?
     // MARK: - UI Properties
 
     private let backgroundView: UIView = {
@@ -59,14 +61,12 @@ final class ListViewController: UIViewController {
     private lazy var rightButtonNavigationBar: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(Constants.chooseRightButtonNavigationBarTitle, for: .normal)
-        button.addTarget(self, action: #selector(rightBarButtonAction), for: .touchUpInside)
+        button.addTarget(self, action: #selector(selectNoteOrDoneEditing), for: .touchUpInside)
         return button
     }()
 
     private var spinner: UIActivityIndicatorView = {
-        var spinner = UIActivityIndicatorView(
-            style: .large
-        )
+        var spinner = UIActivityIndicatorView(style: .large)
         spinner.translatesAutoresizingMaskIntoConstraints = false
         return spinner
     }()
@@ -75,33 +75,19 @@ final class ListViewController: UIViewController {
     @objc func createOrDeleteNote() {
         if isEditing == false {
             tableView.setEditing(false, animated: true)
-            UIView.transition(
-                with: createOrDeleteNoteButton,
-                duration: Constants.buttonAnimationDurationUp,
-                options: .curveLinear,
-                // Используем слабую ссылку чтобы разорвать сильную связь с анимацией
-                // если не использовать будет утечка памяти
-                animations: { [weak self] in guard let self = self else { return }
-                    self.createOrDeleteNoteButton.frame.origin.y -= Constants.buttonAnimationPositionUp
-                }, completion: {_ in
-                    UIView.transition(
-                        with: self.createOrDeleteNoteButton,
-                        duration: Constants.buttonAnimationDurationDown,
-                        options: .curveLinear,
-                        // Используем слабую ссылку чтобы разорвать сильную связь с анимацией
-                        // если не использовать будет утечка памяти
-                        animations: { [weak self] in guard let self = self else { return }
-                            self.createOrDeleteNoteButton.frame.origin.y = UIScreen.main.bounds.maxY
-                        }, completion: { _ in self.createNote() }
-                    )
-                }
+            upDownAnimationView(
+                with: createOrDeleteNoteButton.self,
+                durationUp: Constants.buttonAnimationDurationUp,
+                durationDown: Constants.buttonAnimationDurationDown,
+                positionUp: Constants.buttonAnimationPositionUp,
+                completion: { _ in self.showDetail(note: nil) }
             )
-        } else { deleteNote() }
+        } else { deleteNotes() }
     }
 
-    @objc func rightBarButtonAction() {
+    @objc func selectNoteOrDoneEditing() {
         tableView.setEditing(false, animated: true)
-        if notesInDevice.isEmpty {
+        if notesModel.notesInWeb.isEmpty && notesModel.notesInDevice.isEmpty {
             showAlert(
                 titleMessage: Constants.titleAlert,
                 message: Constants.messageAlertNotNotes,
@@ -110,27 +96,16 @@ final class ListViewController: UIViewController {
         } else { isEditing ? setEditing(false, animated: true) : setEditing(true, animated: true) }
     }
     // MARK: - Init
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        super.init(nibName: nil, bundle: nil)
-        print("ListViewController init")
-    }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    deinit {
-        removeDidEnterBackgroundNotification()
-        print("ListViewController deinit")
-    }
+    deinit { removeDidEnterBackgroundNotification() }
     // MARK: - Inheritance
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        spinner.startAnimating()
-        readNotes()
+        setDelegate()
         configureUI()
-        setupDelegate()
+        getNoticeInStorage()
+        getNoticeInWeb()
         registerDidEnterBackgroundNotification()
     }
 
@@ -140,26 +115,14 @@ final class ListViewController: UIViewController {
             createOrDeleteNoteButton.setImage(
                 UIImage(named: Constants.imageCreateForCreateOrDeleteNoteButton), for: .normal
             )
-            UIView.transition(
-                with: createOrDeleteNoteButton,
-                duration: Constants.transitionButtonAnimationDuration,
-                options: .transitionFlipFromLeft,
-                animations: nil,
-                completion: nil
-            )
+            rotateView(with: createOrDeleteNoteButton, duration: Constants.transitionButtonAnimationDuration)
             tableView.setEditing(false, animated: true)
         } else {
             rightButtonNavigationBar.setTitle(Constants.doneRightButtonNavigationBarTitle, for: .normal)
             createOrDeleteNoteButton.setImage(
                 UIImage(named: Constants.imageDeleteForCreateOrDeleteNoteButton), for: .normal
             )
-            UIView.transition(
-                with: createOrDeleteNoteButton,
-                duration: Constants.transitionButtonAnimationDuration,
-                options: .transitionFlipFromLeft,
-                animations: nil,
-                completion: nil
-            )
+            rotateView(with: createOrDeleteNoteButton, duration: Constants.transitionButtonAnimationDuration)
             tableView.setEditing(true, animated: true)
         }
         super.setEditing(editing, animated: animated)
@@ -167,15 +130,13 @@ final class ListViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        tableView.reloadData()
+        updateData()
         UIView.animate(
             withDuration: Constants.buttonAnimationWithDuration,
             delay: Constants.buttonAnimationDelay,
             usingSpringWithDamping: Constants.buttonAnimationUsingSpringWithDamping,
             initialSpringVelocity: Constants.buttonAnimationInitialSpringVelocity,
             options: [],
-            // Используем слабую ссылку чтобы разорвать сильную связь с анимацией
-            // если не использовать будет утечка памяти
             animations: { [weak self] in guard let self = self else { return }
                 self.createOrDeleteNoteButton.bounds.origin.y -= Constants.buttonAnimatioPosition
             },
@@ -193,41 +154,132 @@ final class ListViewController: UIViewController {
         }
     }
 }
-// MARK: - Private methods
-private extension ListViewController {
-    // MARK: CRuD methods
-    func createNote() {
-        let newNoteViewController = NoteViewController()
-        newNoteViewController.delegate = self
-        navigationController?.pushViewController(newNoteViewController, animated: true)
+// MARK: - UITableViewDataSource
+
+extension ListNotesViewController: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return Constants.numbersOfSections
     }
 
-    func readNotes() {
-        notesInDevice = storageWorker.loadDate(key: Constants.dataStorageKey) ?? []
-        // Возможна утечка памяти, если будет сильная ссылка
-        webWorker.fetch { [weak self] notes in
-            guard let notes = notes else { return }
-            if notes.isEmpty == false {
-                for note in notes {
-                    let newNote = Note(
-                        title: note.title,
-                        text: note.text,
-                        userShareIcon: note.userShareIcon,
-                        date: Date(
-                            timeIntervalSince1970: TimeInterval(
-                                    note.date ?? Int64(Date().timeIntervalSince1970)
-                            )
-                        )
-                    )
-                    self?.notesInWeb.append(newNote)
-                }
-                self?.spinner.removeFromSuperview()
-                self?.tableView.reloadData()
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        Constants.heightForRowAt
+    }
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if section == Constants.notesInDeviceNumberOfSection {
+            return notesModel.notesInDevice.count
+        }
+        if section == Constants.notesInWebNumberOfSection {
+            return notesModel.notesInWeb.count
+        } else { return 0 }
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: NoteCell.reuseId) as? NoteCell
+        let note = indexPath.section == Constants.notesInDeviceNumberOfSection ?
+        notesModel.notesInDevice[indexPath.row] : notesModel.notesInWeb[indexPath.row]
+        cell?.set(with: note)
+        return cell ?? UITableViewCell()
+    }
+}
+// MARK: - UITableViewDelegate methods
+
+extension ListNotesViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if tableView.isEditing == false {
+            var currentNote: Note?
+            if indexPath.section == Constants.notesInDeviceNumberOfSection {
+                currentNote = notesModel.notesInDevice[indexPath.row]
             }
+            if indexPath.section == Constants.notesInWebNumberOfSection {
+                currentNote = notesModel.notesInWeb[indexPath.row]
+            }
+            showDetail(note: currentNote)
         }
     }
 
-    func deleteNote() {
+    func tableView(
+        _ tableView: UITableView,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+    ) -> UISwipeActionsConfiguration? {
+        let actionDelete = UIContextualAction(style: .destructive, title: nil) {
+            _, _, _ in
+            var selectedRows = [IndexPath]()
+            selectedRows.append(indexPath)
+            let request = ListNotesModel.DeleteNotes.Request(selectedRows: selectedRows)
+            self.interactor?.deleteNotes(request: request)
+            tableView.beginUpdates()
+            tableView.deleteRows(at: selectedRows, with: .automatic)
+            tableView.endUpdates()
+        }
+
+        let imageConfig = UIImage.SymbolConfiguration(
+            pointSize: Constants.swipeDeleteNoteImagePointSize,
+            weight: .bold,
+            scale: .large
+        )
+        actionDelete.image = UIImage(
+            systemName: Constants.swipeDeleteNoteImageSystemName,
+            withConfiguration: imageConfig
+        )?.withTintColor(
+            .white,
+            renderingMode: .alwaysTemplate
+        ).addBackgroundCircle(.systemRed)
+
+        actionDelete.backgroundColor = traitCollection.userInterfaceStyle == .dark ?
+        Constants.backgroundColorDark : Constants.backgroundColorLight
+        actionDelete.title = Constants.swipeDeleteNoteTitle
+
+        let actions = UISwipeActionsConfiguration(actions: [actionDelete])
+        actions.performsFirstActionWithFullSwipe = false
+        return actions
+    }
+}
+// MARK: - ListNotesDisplayLogic
+
+extension ListNotesViewController: ListNotesDisplayLogic {
+    func getNotesInStorage(viewModel: ListNotesModel.GetNotesInStorage.ViewModel) {
+        self.notesModel = viewModel.notesModel
+        tableView.reloadData()
+    }
+
+    func getNotesInWeb(viewModel: ListNotesModel.GetNotesInWeb.ViewModel) {
+        if spinner.isAnimating { spinner.stopAnimating() }
+        self.notesModel = viewModel.notesModel
+        tableView.reloadData()
+    }
+
+    func getAllNotesAfterDelete(viewModel: ListNotesModel.DeleteNotes.ViewModel) {
+        self.notesModel = viewModel.notesModel
+    }
+
+    func getAllNotice(viewModel: ListNotesModel.GetModel.ViewModel) {
+        self.notesModel = viewModel.notesModel
+        tableView.reloadData()
+    }
+}
+// MARK: - Private methods
+
+private extension ListNotesViewController {
+    func getNoticeInStorage() {
+        let request = ListNotesModel.GetNotesInStorage.Request(keyDataSource: Constants.keyDataSource)
+        interactor?.getNotesInStorage(request: request)
+    }
+
+    func getNoticeInWeb() {
+        spinner.startAnimating()
+        let request = ListNotesModel.GetNotesInWeb.Request(url: Constants.createURLComponents())
+        interactor?.getNotesInWeb(request: request)
+    }
+
+    func showDetail(note: Note?) {
+        let request = ListNotesModel.ShowDetailNote.Request(currentNote: note)
+        interactor?.showDetailNote(request: request)
+    }
+
+    func updateData() { interactor?.getAllNotice() }
+
+    func deleteNotes() {
         guard let selectedRows = tableView.indexPathsForSelectedRows else {
             showAlert(
                 titleMessage: Constants.titleAlert,
@@ -236,47 +288,16 @@ private extension ListViewController {
             )
             return
         }
-        var deleteNotes = [Note]()
-        for indexPath in selectedRows {
-            if indexPath.section == Constants.notesInDeviceNumberOfSection {
-                deleteNotes.append(notesInDevice[indexPath.row])
-            }
-            if indexPath.section == Constants.notesInWebNumberOfSection {
-                deleteNotes.append(notesInWeb[indexPath.row])
-            }
-        }
-        for deleteNote in deleteNotes {
-            if let index = notesInDevice.firstIndex(of: deleteNote) {
-                notesInDevice.remove(at: index)
-            }
-            if let index = notesInWeb.firstIndex(of: deleteNote) {
-                notesInWeb.remove(at: index)
-            }
-        }
+        let request = ListNotesModel.DeleteNotes.Request(selectedRows: selectedRows)
+        interactor?.deleteNotes(request: request)
         tableView.beginUpdates()
         tableView.deleteRows(at: selectedRows, with: .automatic)
         tableView.endUpdates()
         setEditing(false, animated: true)
     }
 
-    func registerDidEnterBackgroundNotification() {
-        NotificationCenter.default.addObserver(
-            forName: UIApplication.didEnterBackgroundNotification,
-            object: nil,
-            queue: nil
-        ) { _ in
-            self.storageWorker.save(notes: self.notesInDevice, key: Constants.dataStorageKey)
-        }
-    }
-
-    func removeDidEnterBackgroundNotification() {
-        NotificationCenter.default.removeObserver(
-            self,
-            name: UIApplication.didEnterBackgroundNotification,
-            object: nil
-        )
-    }
     // MARK: Configure UI
+
     func configureUI() {
         navigationItem.titleView = titleLabel
         setupViews()
@@ -290,6 +311,11 @@ private extension ListViewController {
         backgroundView.addSubview(tableView)
         view.addSubview(createOrDeleteNoteButton)
         view.addSubview(spinner)
+    }
+
+    func setDelegate() {
+        tableView.delegate = self
+        tableView.dataSource = self
     }
 
     func changeColorUI(to currentUserInterfaceStyle: UIUserInterfaceStyle) {
@@ -307,14 +333,30 @@ private extension ListViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: rightButtonNavigationBar)
     }
 
-    func setupDelegate() {
-        tableView.delegate = self
-        tableView.dataSource = self
+    // MARK: Save data after close app
+
+    func registerDidEnterBackgroundNotification() {
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didEnterBackgroundNotification,
+            object: nil,
+            queue: nil
+        ) { _ in
+            let request = ListNotesModel.SaveAllNotice.Request(keyDataSource: Constants.keyDataSource)
+            self.interactor?.saveAllNotice(request: request)
+        }
+    }
+
+    func removeDidEnterBackgroundNotification() {
+        NotificationCenter.default.removeObserver(
+            self,
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
     }
 }
 // MARK: - Set constraint
 
-extension ListViewController {
+extension ListNotesViewController {
     func setConstraints() {
         if #available(iOS 11, *) {
             let guide = view.safeAreaLayoutGuide
@@ -374,11 +416,25 @@ extension ListViewController {
 }
 // MARK: - Constants
 
-extension ListViewController {
+extension ListNotesViewController {
     private enum Constants {
         // MARK: Data storage constants
 
-        static let dataStorageKey = "notes"
+        static let keyDataSource = "notes"
+
+        // MARK: URL сonstant
+
+        static func createURLComponents() -> URL? {
+            var urlComponents = URLComponents()
+            urlComponents.scheme = "https"
+            urlComponents.host = "firebasestorage.googleapis.com"
+            urlComponents.path = "/v0/b/ios-test-ce687.appspot.com/o/lesson8.json"
+            urlComponents.queryItems = [
+                URLQueryItem(name: "alt", value: "media"),
+                URLQueryItem(name: "token", value: "215055df-172d-4b98-95a0-b353caca1424")
+            ]
+            return urlComponents.url
+        }
 
         // MARK: UI Properties constants
 
@@ -402,13 +458,21 @@ extension ListViewController {
         static let imageDeleteForCreateOrDeleteNoteButton = "buttonRemove.pdf"
         static let transitionButtonAnimationDuration = 0.3
 
+        static let swipeDeleteNoteTitle = "Удалить"
+        static let swipeDeleteNoteImageSystemName = "trash"
+        static let swipeDeleteNoteImagePointSize: CGFloat = 20.0
+
+        static let heightForRowAt = 90.0
+        static let numbersOfSections = 2
+        static let notesInDeviceNumberOfSection = 0
+        static let notesInDeviceTitleSection = "Заметки на устройстве"
+        static let notesInWebNumberOfSection = 1
+        static let notesInWebTitleSection = "Заметки из сети"
+
         static let titleAlert = "Предупреждение"
         static let messageAlertNoteNotChecked = "Вы не выбрали ни одной заметки"
         static let messageAlertNotNotes = "Создайте хотя бы одну заметку"
         static let titleOkButtonAlert = "OK"
-
-        static let notesInDeviceNumberOfSection = 0
-        static let notesInWebNumberOfSection = 1
 
         // MARK: Animations constants
 

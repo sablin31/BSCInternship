@@ -4,10 +4,9 @@
 //
 //  Created by Алексей Саблин on 31.03.2022.
 //
+//  Note in device mode
 
 import Foundation
-
-// MARK: - Note in device model
 
 struct Note: Codable, Identifiable, Equatable {
     // MARK: - Public Properties

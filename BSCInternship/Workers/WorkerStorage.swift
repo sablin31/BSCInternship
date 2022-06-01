@@ -4,23 +4,19 @@
 //
 //  Created by Алексей Саблин on 27.03.2022.
 //
+//  Worker - fetch data in UserDefaults
 
 import Foundation
 
-// MARK: - Data in UserDefaults
+protocol DataSourceServiceProtocol {
+    func loadDate(key: String) -> [Note]?
+    func save(notes: [Note], key: String)
+}
 
-class WorkerStorage {
+struct WorkerStorage: DataSourceServiceProtocol {
     // MARK: - Private proterties
 
     private var storage = UserDefaults.standard
-    // MARK: - Init
-    init() {
-        print("WorkerStorage init")
-    }
-
-    deinit {
-        print("WorkerStorage deinit")
-    }
     // MARK: - Public Methods
 
     func loadDate(key: String) -> [Note]? {
@@ -29,7 +25,7 @@ class WorkerStorage {
             do {
                 notes = try JSONDecoder().decode([Note].self, from: data)
             } catch {
-                print("Unable to Decode Note (\(error))")
+                print("\(Constants.decodeErrorDescription) (\(error))")
             }
         }
         return notes
@@ -40,7 +36,15 @@ class WorkerStorage {
             let data = try JSONEncoder().encode(notes)
             storage.set(data, forKey: key)
         } catch {
-            print("Unable to Encode Note (\(error))")
+            print("\(Constants.encodeErrorDescription) (\(error))")
         }
+    }
+}
+// MARK: - Constants
+
+extension WorkerStorage {
+    private enum Constants {
+        static let decodeErrorDescription = "Unable to Decode Note"
+        static let encodeErrorDescription = "Unable to Decode Note"
     }
 }

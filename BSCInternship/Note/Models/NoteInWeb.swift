@@ -4,10 +4,9 @@
 //
 //  Created by Алексей Саблин on 16.05.2022.
 //
+//  Note in Web
 
 import Foundation
-
-// MARK: - Note in web model
 
 struct NoteInWeb: Decodable {
     // MARK: - Public Properties
