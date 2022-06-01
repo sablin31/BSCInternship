@@ -213,7 +213,7 @@ private extension DetailNoteViewController {
         titleTextField.delegate = self
         noteTextView.delegate = self
     }
-    
+
     // MARK: Data operation
 
     func getCurrentNote() {
