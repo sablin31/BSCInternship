@@ -11,7 +11,7 @@ import Foundation
 protocol ListNotesBusinessLogic: AnyObject {
     func getNotesInStorage(request: ListNotesModel.GetNotesInStorage.Request)
     func getNotesInWeb(request: ListNotesModel.GetNotesInWeb.Request)
-    func getAllNotice(request: ListNotesModel.GetModel.Request)
+    func updateModel(request: ListNotesModel.GetModel.Request)
     func saveAllNotice(request: ListNotesModel.SaveAllNotice.Request)
     func deleteNotes(request: ListNotesModel.DeleteNotes.Request)
 }
@@ -67,7 +67,7 @@ final class ListNotesInteractor: ListNotesBusinessLogic, ListNotesDataStore {
         }
     }
 
-    func getAllNotice(request: ListNotesModel.GetModel.Request) {
+    func updateModel(request: ListNotesModel.GetModel.Request) {
         let response = ListNotesModel.GetModel.Response(notesModel: notesModel)
         self.presenter?.presentAllNotice(response: response)
     }

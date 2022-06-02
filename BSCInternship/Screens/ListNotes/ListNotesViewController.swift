@@ -280,7 +280,7 @@ private extension ListNotesViewController {
 
     func updateData() {
         let request = ListNotesModel.GetModel.Request()
-        interactor?.getAllNotice(request: request) }
+        interactor?.updateModel(request: request) }
 
     func deleteNotes() {
         guard let selectedRows = tableView.indexPathsForSelectedRows else {
