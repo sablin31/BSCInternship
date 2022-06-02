@@ -14,7 +14,7 @@ protocol RouterMain {
 
 protocol RouterProtocol: RouterMain {
     func initialViewController()
-    func routeToDetailNoteController(with note: Note?, delegate: DetailNoteInteractorDelegate?)
+    func routeToDetailNoteController(with note: Note?, dataStore: ListNotesDataStore?)
     func popToRoot()
 }
 
@@ -34,12 +34,12 @@ class Router: RouterProtocol {
         }
     }
 
-    func routeToDetailNoteController(with note: Note?, delegate: DetailNoteInteractorDelegate?) {
+    func routeToDetailNoteController(with note: Note?, dataStore: ListNotesDataStore?) {
         if let navigationController = navigationController {
             guard let detailNoteViewController = assemblyBuilder?.createDetailNoteScreen(
                 router: self,
                 currentNote: note,
-                delegate: delegate
+                dataStore: dataStore
             ) else { return }
             navigationController.pushViewController(detailNoteViewController, animated: true)
         }

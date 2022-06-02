@@ -18,6 +18,7 @@ class DetailNoteViewController: UIViewController, UITextViewDelegate, UITextFiel
     // MARK: - Proterties
 
     var interactor: DetailNoteBusinessLogic?
+    var router: RouterProtocol?
     // MARK: - UI Properties
 
     private let backgroundView: UIView = {
@@ -133,7 +134,7 @@ class DetailNoteViewController: UIViewController, UITextViewDelegate, UITextFiel
         if (title != nil || text != nil) && isEditing {
             updateModel(title: title, text: text)
         }
-        interactor?.comeBackToListNotes()
+        router?.popToRoot()
     }
 
     @objc func rightBarButtonAction() {
@@ -180,7 +181,7 @@ private extension DetailNoteViewController {
 
         titleTextField.autocorrectionType = .no
         noteTextView.autocorrectionType = .no
-        if titleTextField.text?.isEmpty ?? false,
+        if titleTextField.text?.isEmpty ?? true,
            noteTextView.text.isEmpty { noteTextView.becomeFirstResponder() }
     }
 
@@ -217,7 +218,8 @@ private extension DetailNoteViewController {
     // MARK: Data operation
 
     func getCurrentNote() {
-        interactor?.getCurrentNote()
+        let request = DetailNoteModel.GetNote.Request()
+        interactor?.getCurrentNote(request: request)
     }
 
     func updateModel(title: String?, text: String?) {

@@ -13,7 +13,7 @@ protocol AssemblyBuilderProtocol {
     func createDetailNoteScreen(
         router: RouterProtocol,
         currentNote: Note?,
-        delegate: DetailNoteInteractorDelegate?
+        dataStore: ListNotesDataStore?
     ) -> UIViewController
 }
 
@@ -25,8 +25,8 @@ class AssemblyModuleBuilder: AssemblyBuilderProtocol {
         let interactor = ListNotesInteractor()
         let presenter = ListNotesPresenter()
         view.interactor = interactor
+        view.router = router
         interactor.presenter = presenter
-        interactor.router = router
         presenter.viewController = view
         return view
     }
@@ -34,16 +34,16 @@ class AssemblyModuleBuilder: AssemblyBuilderProtocol {
     func createDetailNoteScreen(
         router: RouterProtocol,
         currentNote: Note?,
-        delegate: DetailNoteInteractorDelegate?
+        dataStore: ListNotesDataStore?
     ) -> UIViewController {
         let view = DetailNoteViewController()
         let interactor = DetailNoteInteractor()
         let presenter = DetailNotePresenter()
         view.interactor = interactor
+        view.router = router
         interactor.currentNote = currentNote
         interactor.presenter = presenter
-        interactor.router = router
-        interactor.delegate = delegate
+        interactor.dataStore = dataStore
         presenter.viewController = view
         return view
     }

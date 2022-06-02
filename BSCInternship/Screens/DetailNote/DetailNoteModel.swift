@@ -9,6 +9,8 @@ import Foundation
 enum DetailNoteModel {
     // MARK: Show
     enum GetNote {
+        // ViewController to Interactor
+        struct Request {}
         // Interactor to Presenter
         struct Response {
             let currentNote: Note?
@@ -20,7 +22,7 @@ enum DetailNoteModel {
             let date: String
         }
     }
-    // MARK: Show
+    // MARK: UpdateNote
     enum UpdateNote {
         // ViewController to Interactor
         struct Request {

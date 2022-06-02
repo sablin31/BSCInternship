@@ -9,28 +9,18 @@
 import Foundation
 
 protocol DetailNoteBusinessLogic: AnyObject {
-    func getCurrentNote()
+    func getCurrentNote(request: DetailNoteModel.GetNote.Request)
     func updateModel(request: DetailNoteModel.UpdateNote.Request)
-    func comeBackToListNotes()
 }
 
-protocol DetailNoteDataStore: AnyObject {
-    var currentNote: Note? { get set }
-}
-
-protocol DetailNoteInteractorDelegate: AnyObject {
-    func noteWasChanged(with note: Note)
-}
-
-class DetailNoteInteractor: DetailNoteBusinessLogic, DetailNoteDataStore {
+class DetailNoteInteractor: DetailNoteBusinessLogic {
     // MARK: - Public proterties
 
     var currentNote: Note?
     var presenter: DetailNotePresentationLogic?
-    weak var delegate: DetailNoteInteractorDelegate?
-    var router: RouterProtocol?
+    weak var dataStore: ListNotesDataStore?
 
-    func getCurrentNote() {
+    func getCurrentNote(request: DetailNoteModel.GetNote.Request) {
         let response = DetailNoteModel.GetNote.Response(currentNote: currentNote)
         self.presenter?.presentCurrentNote(response: response)
     }
@@ -44,13 +34,19 @@ class DetailNoteInteractor: DetailNoteBusinessLogic, DetailNoteDataStore {
             currentNote = Note(title: request.title, text: request.text, userShareIcon: nil)
         }
         if let currentNote = currentNote {
-            delegate?.noteWasChanged(with: currentNote)
+            if let item = dataStore?.notesModel.notesInWeb.firstIndex( where: { $0.id == currentNote.id }) {
+                dataStore?.notesModel.notesInWeb[item].title = currentNote.title
+                dataStore?.notesModel.notesInWeb[item].text = currentNote.text
+                dataStore?.notesModel.notesInWeb[item].date = Date()
+            } else {
+                if let item = dataStore?.notesModel.notesInDevice.firstIndex( where: { $0.id == currentNote.id }) {
+                    dataStore?.notesModel.notesInDevice[item].title = currentNote.title
+                    dataStore?.notesModel.notesInDevice[item].text = currentNote.text
+                    dataStore?.notesModel.notesInDevice[item].date = Date()
+                } else { dataStore?.notesModel.notesInDevice.append(currentNote) }
+            }
         }
         let response = DetailNoteModel.UpdateNote.Response(currentNote: currentNote)
         self.presenter?.presentModifierCurrentNote(response: response)
-    }
-
-    func comeBackToListNotes() {
-        router?.popToRoot()
     }
 }

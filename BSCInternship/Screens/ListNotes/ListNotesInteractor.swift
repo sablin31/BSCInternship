@@ -11,9 +11,8 @@ import Foundation
 protocol ListNotesBusinessLogic: AnyObject {
     func getNotesInStorage(request: ListNotesModel.GetNotesInStorage.Request)
     func getNotesInWeb(request: ListNotesModel.GetNotesInWeb.Request)
-    func getAllNotice()
+    func getAllNotice(request: ListNotesModel.GetModel.Request)
     func saveAllNotice(request: ListNotesModel.SaveAllNotice.Request)
-    func showDetailNote(request: ListNotesModel.ShowDetailNote.Request)
     func deleteNotes(request: ListNotesModel.DeleteNotes.Request)
 }
 
@@ -26,7 +25,6 @@ final class ListNotesInteractor: ListNotesBusinessLogic, ListNotesDataStore {
 
     var notesModel = NotesModel()
     var presenter: ListNotesPresentationLogic?
-    var router: RouterProtocol?
     // MARK: - Private properties
 
     private let workerStorage = WorkerStorage()
@@ -69,17 +67,15 @@ final class ListNotesInteractor: ListNotesBusinessLogic, ListNotesDataStore {
         }
     }
 
-    func getAllNotice() {
+    func getAllNotice(request: ListNotesModel.GetModel.Request) {
         let response = ListNotesModel.GetModel.Response(notesModel: notesModel)
         self.presenter?.presentAllNotice(response: response)
     }
 
     func saveAllNotice(request: ListNotesModel.SaveAllNotice.Request) {
         workerStorage.save(notes: self.notesModel.notesInDevice, key: request.keyDataSource)
-    }
-
-    func showDetailNote(request: ListNotesModel.ShowDetailNote.Request) {
-        router?.routeToDetailNoteController(with: request.currentNote, delegate: self)
+        let response = ListNotesModel.SaveAllNotice.Response()
+        self.presenter?.presentAllSaveNotice(response: response)
     }
 
     func deleteNotes(request: ListNotesModel.DeleteNotes.Request) {
@@ -106,23 +102,6 @@ final class ListNotesInteractor: ListNotesBusinessLogic, ListNotesDataStore {
 
         let response = ListNotesModel.DeleteNotes.Response(notesModel: notesModel)
         self.presenter?.presentNotesAfterDelete(response: response)
-    }
-}
-// MARK: - DetailNoteInteractorDelegate
-
-extension ListNotesInteractor: DetailNoteInteractorDelegate {
-    func noteWasChanged(with note: Note) {
-        if let item = self.notesModel.notesInWeb.firstIndex( where: { $0.id == note.id }) {
-            self.notesModel.notesInWeb[item].title = note.title
-            self.notesModel.notesInWeb[item].text = note.text
-            self.notesModel.notesInWeb[item].date = Date()
-        } else {
-            if let item = self.notesModel.notesInDevice.firstIndex( where: { $0.id == note.id }) {
-                self.notesModel.notesInDevice[item].title = note.title
-                self.notesModel.notesInDevice[item].text = note.text
-                self.notesModel.notesInDevice[item].date = Date()
-            } else { self.notesModel.notesInDevice.append(note) }
-        }
     }
 }
 // MARK: - Constants

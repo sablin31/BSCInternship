@@ -57,8 +57,10 @@ enum ListNotesModel {
         }
     }
 
-    // MARK: Update data
+    // MARK: Get all notes
     enum GetModel {
+        // ViewController to Interactor
+        struct Request {}
         // Interactor to Presenter
         struct Response {
             let notesModel: NotesModel
@@ -69,19 +71,15 @@ enum ListNotesModel {
         }
     }
 
-    // MARK: Show detail note
-    enum ShowDetailNote {
-        // ViewController to Interactor
-        struct Request {
-            var currentNote: Note?
-        }
-    }
-
     // MARK: Save notes after close app
     enum SaveAllNotice {
         // ViewController to Interactor
         struct Request {
             var keyDataSource: String
         }
+        // Interactor to Presenter
+        struct Response {}
+        // Presentor to ViewController
+        struct ViewModel {}
     }
 }

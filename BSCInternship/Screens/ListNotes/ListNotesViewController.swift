@@ -9,17 +9,19 @@
 import UIKit
 
 protocol ListNotesDisplayLogic: AnyObject {
-    func getNotesInStorage(viewModel: ListNotesModel.GetNotesInStorage.ViewModel)
-    func getNotesInWeb(viewModel: ListNotesModel.GetNotesInWeb.ViewModel)
-    func getAllNotice(viewModel: ListNotesModel.GetModel.ViewModel)
-    func getAllNotesAfterDelete(viewModel: ListNotesModel.DeleteNotes.ViewModel)
+    func showNotesInStorage(viewModel: ListNotesModel.GetNotesInStorage.ViewModel)
+    func showNotesInWeb(viewModel: ListNotesModel.GetNotesInWeb.ViewModel)
+    func showAllNotice(viewModel: ListNotesModel.GetModel.ViewModel)
+    func showAllNotesAfterDelete(viewModel: ListNotesModel.DeleteNotes.ViewModel)
+    func showAllNotesAfterSave(viewModel: ListNotesModel.SaveAllNotice.ViewModel)
 }
 
 final class ListNotesViewController: UIViewController {
     // MARK: - Public proterties
 
     var notesModel = NotesModel()
-    var interactor: ListNotesBusinessLogic?
+    var interactor: ListNotesInteractor?
+    var router: RouterProtocol?
     // MARK: - UI Properties
 
     private let backgroundView: UIView = {
@@ -80,7 +82,7 @@ final class ListNotesViewController: UIViewController {
                 durationUp: Constants.buttonAnimationDurationUp,
                 durationDown: Constants.buttonAnimationDurationDown,
                 positionUp: Constants.buttonAnimationPositionUp,
-                completion: { _ in self.showDetail(note: nil) }
+                completion: { _ in self.router?.routeToDetailNoteController(with: nil, dataStore: self.interactor) }
             )
         } else { deleteNotes() }
     }
@@ -194,7 +196,7 @@ extension ListNotesViewController: UITableViewDelegate {
             if indexPath.section == Constants.notesInWebNumberOfSection {
                 currentNote = notesModel.notesInWeb[indexPath.row]
             }
-            showDetail(note: currentNote)
+            router?.routeToDetailNoteController(with: currentNote, dataStore: interactor)
         }
     }
 
@@ -238,24 +240,28 @@ extension ListNotesViewController: UITableViewDelegate {
 // MARK: - ListNotesDisplayLogic
 
 extension ListNotesViewController: ListNotesDisplayLogic {
-    func getNotesInStorage(viewModel: ListNotesModel.GetNotesInStorage.ViewModel) {
+    func showNotesInStorage(viewModel: ListNotesModel.GetNotesInStorage.ViewModel) {
         self.notesModel = viewModel.notesModel
         tableView.reloadData()
     }
 
-    func getNotesInWeb(viewModel: ListNotesModel.GetNotesInWeb.ViewModel) {
+    func showNotesInWeb(viewModel: ListNotesModel.GetNotesInWeb.ViewModel) {
         if spinner.isAnimating { spinner.stopAnimating() }
         self.notesModel = viewModel.notesModel
         tableView.reloadData()
     }
 
-    func getAllNotesAfterDelete(viewModel: ListNotesModel.DeleteNotes.ViewModel) {
+    func showAllNotesAfterDelete(viewModel: ListNotesModel.DeleteNotes.ViewModel) {
         self.notesModel = viewModel.notesModel
     }
 
-    func getAllNotice(viewModel: ListNotesModel.GetModel.ViewModel) {
+    func showAllNotice(viewModel: ListNotesModel.GetModel.ViewModel) {
         self.notesModel = viewModel.notesModel
         tableView.reloadData()
+    }
+
+    func showAllNotesAfterSave(viewModel: ListNotesModel.SaveAllNotice.ViewModel) {
+        print("All notese in device is save in UserDefaults")
     }
 }
 // MARK: - Private methods
@@ -272,12 +278,9 @@ private extension ListNotesViewController {
         interactor?.getNotesInWeb(request: request)
     }
 
-    func showDetail(note: Note?) {
-        let request = ListNotesModel.ShowDetailNote.Request(currentNote: note)
-        interactor?.showDetailNote(request: request)
-    }
-
-    func updateData() { interactor?.getAllNotice() }
+    func updateData() {
+        let request = ListNotesModel.GetModel.Request()
+        interactor?.getAllNotice(request: request) }
 
     func deleteNotes() {
         guard let selectedRows = tableView.indexPathsForSelectedRows else {
@@ -419,11 +422,9 @@ extension ListNotesViewController {
 extension ListNotesViewController {
     private enum Constants {
         // MARK: Data storage constants
-
         static let keyDataSource = "notes"
 
         // MARK: URL сonstant
-
         static func createURLComponents() -> URL? {
             var urlComponents = URLComponents()
             urlComponents.scheme = "https"
@@ -437,7 +438,6 @@ extension ListNotesViewController {
         }
 
         // MARK: UI Properties constants
-
         static let backgroundColorLight = UIColor(red: 0.976, green: 0.98, blue: 0.996, alpha: 1)
         static let backgroundColorDark = UIColor.darkGray
 
@@ -475,7 +475,6 @@ extension ListNotesViewController {
         static let titleOkButtonAlert = "OK"
 
         // MARK: Animations constants
-
         static let buttonAnimationWithDuration = 1.5
         static let buttonAnimationDelay = 0.2
         static let buttonAnimationUsingSpringWithDamping = 0.1
@@ -487,7 +486,6 @@ extension ListNotesViewController {
         static let buttonAnimationDurationDown = 0.15
 
         // MARK: Constraints constants
-
         static let tableViewTopAnchor: CGFloat = 16
         static let tableViewLeadingAnchor: CGFloat = 10
         static let tableViewTrailingAnchor: CGFloat = -10
