@@ -19,7 +19,7 @@ protocol ListNotesDisplayLogic: AnyObject {
 final class ListNotesViewController: UIViewController {
     // MARK: - Public proterties
 
-    var notesModel = NotesModel()
+    var notesModel = NotesViewModel()
     var interactor: ListNotesInteractor?
     var router: RouterProtocol?
     // MARK: - UI Properties
@@ -189,7 +189,7 @@ extension ListNotesViewController: UITableViewDataSource {
 extension ListNotesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if tableView.isEditing == false {
-            var currentNote: Note?
+            var currentNote: NoteModel?
             if indexPath.section == Constants.notesInDeviceNumberOfSection {
                 currentNote = notesModel.notesInDevice[indexPath.row]
             }
@@ -241,22 +241,22 @@ extension ListNotesViewController: UITableViewDelegate {
 
 extension ListNotesViewController: ListNotesDisplayLogic {
     func showNotesInStorage(viewModel: ListNotesModel.GetNotesInStorage.ViewModel) {
-        self.notesModel = viewModel.notesModel
+        self.notesModel = viewModel.notesViewModel
         tableView.reloadData()
     }
 
     func showNotesInWeb(viewModel: ListNotesModel.GetNotesInWeb.ViewModel) {
         if spinner.isAnimating { spinner.stopAnimating() }
-        self.notesModel = viewModel.notesModel
+        self.notesModel = viewModel.notesViewModel
         tableView.reloadData()
     }
 
     func showAllNotesAfterDelete(viewModel: ListNotesModel.DeleteNotes.ViewModel) {
-        self.notesModel = viewModel.notesModel
+        self.notesModel = viewModel.notesViewModel
     }
 
     func showAllNotice(viewModel: ListNotesModel.GetModel.ViewModel) {
-        self.notesModel = viewModel.notesModel
+        self.notesModel = viewModel.notesViewModel
         tableView.reloadData()
     }
 

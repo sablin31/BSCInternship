@@ -7,16 +7,16 @@
 
 import Foundation
 
-struct NotesModel {
+struct NotesViewModel {
     // MARK: - Public Properties
 
-    var notesInDevice: [Note]
-    var notesInWeb: [Note]
+    var notesInDevice: [NoteModel]
+    var notesInWeb: [NoteModel]
     // MARK: - Init
 
     init(
-        notesInDevice: [Note] = [],
-        notesInWeb: [Note] = []
+        notesInDevice: [NoteModel] = [],
+        notesInWeb: [NoteModel] = []
     ) {
         self.notesInDevice = notesInDevice
         self.notesInWeb = notesInWeb

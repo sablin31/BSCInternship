@@ -9,8 +9,8 @@
 import Foundation
 
 protocol DataSourceServiceProtocol {
-    func loadDate(key: String) -> [Note]?
-    func save(notes: [Note], key: String)
+    func loadDate(key: String) -> [NoteModel]?
+    func save(notes: [NoteModel], key: String)
 }
 
 struct WorkerStorage: DataSourceServiceProtocol {
@@ -19,11 +19,11 @@ struct WorkerStorage: DataSourceServiceProtocol {
     private var storage = UserDefaults.standard
     // MARK: - Public Methods
 
-    func loadDate(key: String) -> [Note]? {
-        var notes: [Note]?
+    func loadDate(key: String) -> [NoteModel]? {
+        var notes: [NoteModel]?
         if let data = storage.data(forKey: key) {
             do {
-                notes = try JSONDecoder().decode([Note].self, from: data)
+                notes = try JSONDecoder().decode([NoteModel].self, from: data)
             } catch {
                 print("\(Constants.decodeErrorDescription) (\(error))")
             }
@@ -31,7 +31,7 @@ struct WorkerStorage: DataSourceServiceProtocol {
         return notes
     }
 
-    func save(notes: [Note], key: String) {
+    func save(notes: [NoteModel], key: String) {
         do {
             let data = try JSONEncoder().encode(notes)
             storage.set(data, forKey: key)

@@ -17,13 +17,15 @@ protocol ListNotesBusinessLogic: AnyObject {
 }
 
 protocol ListNotesDataStore: AnyObject {
-    var notesModel: NotesModel { get set }
+    var notesInDevice: [NoteModel] { get set }
+    var notesInWeb: [NoteResponceMo] { get set }
 }
 
 final class ListNotesInteractor: ListNotesBusinessLogic, ListNotesDataStore {
     // MARK: - Public properties
 
-    var notesModel = NotesModel()
+    var notesInDevice = [NoteModel]()
+    var notesInWeb = [NoteResponceMo]()
     var presenter: ListNotesPresentationLogic?
     // MARK: - Private properties
 
@@ -32,8 +34,11 @@ final class ListNotesInteractor: ListNotesBusinessLogic, ListNotesDataStore {
     // MARK: - Public methods
 
     func getNotesInStorage(request: ListNotesModel.GetNotesInStorage.Request) {
-        notesModel.notesInDevice = workerStorage.loadDate(key: request.keyDataSource) ?? []
-        let response = ListNotesModel.GetNotesInStorage.Response(notesModel: notesModel)
+        notesInDevice = workerStorage.loadDate(key: request.keyDataSource) ?? []
+        let response = ListNotesModel.GetNotesInStorage.Response(
+            notesInDevice: notesInDevice,
+            notesInWeb: notesInWeb
+        )
         self.presenter?.presentNotesInStorage(response: response)
     }
 
@@ -45,7 +50,7 @@ final class ListNotesInteractor: ListNotesBusinessLogic, ListNotesDataStore {
                 case .success(let notes):
                     if let notes = notes {
                         for note in notes {
-                            let newNote = Note(
+                            let newNote = NoteResponceMo(
                                 title: note.title,
                                 text: note.text,
                                 userShareIcon: note.userShareIcon,
@@ -55,8 +60,11 @@ final class ListNotesInteractor: ListNotesBusinessLogic, ListNotesDataStore {
                                     )
                                 )
                             )
-                            self.notesModel.notesInWeb.append(newNote)
-                            let response = ListNotesModel.GetNotesInWeb.Response(notesModel: self.notesModel)
+                            self.notesInWeb.append(newNote)
+                            let response = ListNotesModel.GetNotesInWeb.Response(
+                                notesInDevice: self.notesInDevice,
+                                notesInWeb: self.notesInWeb
+                            )
                             self.presenter?.presentNotesInWeb(response: response)
                         }
                     }
@@ -68,39 +76,45 @@ final class ListNotesInteractor: ListNotesBusinessLogic, ListNotesDataStore {
     }
 
     func updateModel(request: ListNotesModel.GetModel.Request) {
-        let response = ListNotesModel.GetModel.Response(notesModel: notesModel)
+        let response = ListNotesModel.GetModel.Response(
+            notesInDevice: notesInDevice,
+            notesInWeb: notesInWeb
+        )
         self.presenter?.presentAllNotice(response: response)
     }
 
     func saveAllNotice(request: ListNotesModel.SaveAllNotice.Request) {
-        workerStorage.save(notes: self.notesModel.notesInDevice, key: request.keyDataSource)
+        workerStorage.save(notes: self.notesInDevice, key: request.keyDataSource)
         let response = ListNotesModel.SaveAllNotice.Response()
         self.presenter?.presentAllSaveNotice(response: response)
     }
 
     func deleteNotes(request: ListNotesModel.DeleteNotes.Request) {
-        var deleteNotesInDevice = [Note]()
-        var deleteNotesInWeb = [Note]()
+        var deleteNotesInDevice = [NoteModel]()
+        var deleteNotesInWeb = [NoteResponceMo]()
         for indexPath in request.selectedRows {
             if indexPath.section == Constants.notesInDeviceNumberOfSection {
-                deleteNotesInDevice.append(notesModel.notesInDevice[indexPath.row])
+                deleteNotesInDevice.append(notesInDevice[indexPath.row])
             }
             if indexPath.section == Constants.notesInWebNumberOfSection {
-                deleteNotesInWeb.append(notesModel.notesInWeb[indexPath.row])
+                deleteNotesInWeb.append(notesInWeb[indexPath.row])
             }
         }
         for deleteNoteInDevice in deleteNotesInDevice {
-            if let index = notesModel.notesInDevice.firstIndex(of: deleteNoteInDevice) {
-                notesModel.notesInDevice.remove(at: index)
+            if let index = notesInDevice.firstIndex(of: deleteNoteInDevice) {
+                notesInDevice.remove(at: index)
             }
         }
         for deleteNoteInWeb in deleteNotesInWeb {
-            if let index = notesModel.notesInWeb.firstIndex(of: deleteNoteInWeb) {
-                notesModel.notesInWeb.remove(at: index)
+            if let index = notesInWeb.firstIndex(of: deleteNoteInWeb) {
+                notesInWeb.remove(at: index)
             }
         }
 
-        let response = ListNotesModel.DeleteNotes.Response(notesModel: notesModel)
+        let response = ListNotesModel.DeleteNotes.Response(
+            notesInDevice: notesInDevice,
+            notesInWeb: notesInWeb
+        )
         self.presenter?.presentNotesAfterDelete(response: response)
     }
 }

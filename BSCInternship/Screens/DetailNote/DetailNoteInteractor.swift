@@ -16,7 +16,7 @@ protocol DetailNoteBusinessLogic: AnyObject {
 class DetailNoteInteractor: DetailNoteBusinessLogic {
     // MARK: - Public proterties
 
-    var currentNote: Note?
+    var currentNote: NoteModel?
     var presenter: DetailNotePresentationLogic?
     weak var dataStore: ListNotesDataStore?
 
@@ -31,19 +31,19 @@ class DetailNoteInteractor: DetailNoteBusinessLogic {
             currentNote?.text = request.text
             currentNote?.date = Date()
         } else {
-            currentNote = Note(title: request.title, text: request.text, userShareIcon: nil)
+            currentNote = NoteModel(title: request.title, text: request.text, userShareIcon: nil)
         }
         if let currentNote = currentNote {
-            if let item = dataStore?.notesModel.notesInWeb.firstIndex( where: { $0.id == currentNote.id }) {
-                dataStore?.notesModel.notesInWeb[item].title = currentNote.title
-                dataStore?.notesModel.notesInWeb[item].text = currentNote.text
-                dataStore?.notesModel.notesInWeb[item].date = Date()
+            if let item = dataStore?.notesInWeb.firstIndex( where: { $0.id == currentNote.id }) {
+                dataStore?.notesInWeb[item].title = currentNote.title
+                dataStore?.notesInWeb[item].text = currentNote.text
+                dataStore?.notesInWeb[item].date = Date()
             } else {
-                if let item = dataStore?.notesModel.notesInDevice.firstIndex( where: { $0.id == currentNote.id }) {
-                    dataStore?.notesModel.notesInDevice[item].title = currentNote.title
-                    dataStore?.notesModel.notesInDevice[item].text = currentNote.text
-                    dataStore?.notesModel.notesInDevice[item].date = Date()
-                } else { dataStore?.notesModel.notesInDevice.append(currentNote) }
+                if let item = dataStore?.notesInDevice.firstIndex( where: { $0.id == currentNote.id }) {
+                    dataStore?.notesInDevice[item].title = currentNote.title
+                    dataStore?.notesInDevice[item].text = currentNote.text
+                    dataStore?.notesInDevice[item].date = Date()
+                } else { dataStore?.notesInDevice.append(currentNote) }
             }
         }
         let response = DetailNoteModel.UpdateNote.Response(currentNote: currentNote)

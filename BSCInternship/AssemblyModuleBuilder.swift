@@ -12,7 +12,7 @@ protocol AssemblyBuilderProtocol {
     func createListNotesScreen(router: RouterProtocol) -> UIViewController
     func createDetailNoteScreen(
         router: RouterProtocol,
-        currentNote: Note?,
+        currentNote: NoteModel?,
         dataStore: ListNotesDataStore?
     ) -> UIViewController
 }
@@ -33,7 +33,7 @@ class AssemblyModuleBuilder: AssemblyBuilderProtocol {
 
     func createDetailNoteScreen(
         router: RouterProtocol,
-        currentNote: Note?,
+        currentNote: NoteModel?,
         dataStore: ListNotesDataStore?
     ) -> UIViewController {
         let view = DetailNoteViewController()

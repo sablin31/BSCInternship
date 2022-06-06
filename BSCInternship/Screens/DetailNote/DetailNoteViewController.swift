@@ -129,8 +129,8 @@ class DetailNoteViewController: UIViewController, UITextViewDelegate, UITextFiel
     // MARK: - Actions methods
 
     @objc func leftBarButtonAction() {
-        let title = (titleTextField.text?.isEmpty ?? true) ? nil : titleTextField.text
-        let text = (noteTextView.text?.isEmpty ?? true) ? nil : noteTextView.text
+        let title = titleTextField.hasText == false ? nil : titleTextField.text
+        let text = noteTextView.hasText == false ? nil : noteTextView.text
         if (title != nil || text != nil) && isEditing {
             updateModel(title: title, text: text)
         }
@@ -139,8 +139,8 @@ class DetailNoteViewController: UIViewController, UITextViewDelegate, UITextFiel
 
     @objc func rightBarButtonAction() {
         view.endEditing(true)
-        let title = (titleTextField.text?.isEmpty ?? true) ? nil : titleTextField.text
-        let text = (noteTextView.text?.isEmpty ?? true) ? nil : noteTextView.text
+        let title = titleTextField.hasText == false ? nil : titleTextField.text
+        let text = noteTextView.hasText == false ? nil : noteTextView.text
         if title == nil, text == nil {
             showAlert(
                 titleMessage: Constants.titleAlert,

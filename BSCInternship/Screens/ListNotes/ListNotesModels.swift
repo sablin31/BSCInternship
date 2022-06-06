@@ -17,11 +17,12 @@ enum ListNotesModel {
         }
         // Interactor to Presenter
         struct Response {
-            let notesModel: NotesModel
+            let notesInDevice: [NoteModel]
+            let notesInWeb: [NoteResponceMo]
         }
         // Presentor to ViewController
         struct ViewModel {
-            let notesModel: NotesModel
+            let notesViewModel: NotesViewModel
         }
     }
 
@@ -33,11 +34,12 @@ enum ListNotesModel {
         }
         // Interactor to Presenter
         struct Response {
-            let notesModel: NotesModel
+            let notesInDevice: [NoteModel]
+            let notesInWeb: [NoteResponceMo]
         }
         // Presentor to ViewController
         struct ViewModel {
-            let notesModel: NotesModel
+            let notesViewModel: NotesViewModel
         }
     }
 
@@ -49,11 +51,12 @@ enum ListNotesModel {
         }
         // Interactor to Presenter
         struct Response {
-            let notesModel: NotesModel
+            let notesInDevice: [NoteModel]
+            let notesInWeb: [NoteResponceMo]
         }
         // Presentor to ViewController
         struct ViewModel {
-            let notesModel: NotesModel
+            let notesViewModel: NotesViewModel
         }
     }
 
@@ -63,11 +66,12 @@ enum ListNotesModel {
         struct Request {}
         // Interactor to Presenter
         struct Response {
-            let notesModel: NotesModel
+            let notesInDevice: [NoteModel]
+            let notesInWeb: [NoteResponceMo]
         }
         // Presentor to ViewController
         struct ViewModel {
-            let notesModel: NotesModel
+            let notesViewModel: NotesViewModel
         }
     }
 

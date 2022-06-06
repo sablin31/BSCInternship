@@ -14,7 +14,7 @@ protocol RouterMain {
 
 protocol RouterProtocol: RouterMain {
     func initialViewController()
-    func routeToDetailNoteController(with note: Note?, dataStore: ListNotesDataStore?)
+    func routeToDetailNoteController(with note: NoteModel?, dataStore: ListNotesDataStore?)
     func popToRoot()
 }
 
@@ -34,7 +34,7 @@ class Router: RouterProtocol {
         }
     }
 
-    func routeToDetailNoteController(with note: Note?, dataStore: ListNotesDataStore?) {
+    func routeToDetailNoteController(with note: NoteModel?, dataStore: ListNotesDataStore?) {
         if let navigationController = navigationController {
             guard let detailNoteViewController = assemblyBuilder?.createDetailNoteScreen(
                 router: self,

@@ -13,7 +13,7 @@ class NoteCell: UITableViewCell {
     // MARK: - Properties
 
     static let reuseId = String(describing: NoteCell.self)
-    var note: Note?
+    var note: NoteModel?
     // MARK: - UI Properties
 
     private let bgView: UIView = {
@@ -78,7 +78,7 @@ class NoteCell: UITableViewCell {
     }
     // MARK: - Public methods
 
-    func set(with note: Note?) {
+    func set(with note: NoteModel?) {
         self.note = note
         updateData()
     }

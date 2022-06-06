@@ -16,7 +16,7 @@ protocol DetailNotePresentationLogic: AnyObject {
 
 class DetailNotePresenter: DetailNotePresentationLogic {
     // MARK: - Public proterties
-    var formattedCurrentNote: Note?
+    var formattedCurrentNote: NoteModel?
 
     weak var viewController: DetailNoteDisplayLogic?
     // MARK: - Public methods

@@ -13,7 +13,7 @@ enum DetailNoteModel {
         struct Request {}
         // Interactor to Presenter
         struct Response {
-            let currentNote: Note?
+            let currentNote: NoteModel?
         }
         // Presentor to ViewController
         struct ViewModel {
@@ -31,7 +31,7 @@ enum DetailNoteModel {
         }
         // Interactor to Presenter
         struct Response {
-            let currentNote: Note?
+            let currentNote: NoteModel?
         }
         // Presentor to ViewController
         struct ViewModel {
