@@ -54,3 +54,46 @@ extension UIViewController {
         self.present(dialogMessage, animated: true, completion: nil)
     }
 }
+// MARK: - Animation
+
+extension UIViewController {
+    func rotateView(
+        with viewElement: UIView,
+        duration: TimeInterval
+    ) {
+        UIView.transition(
+            with: viewElement,
+            duration: duration,
+            options: .transitionFlipFromLeft,
+            animations: nil,
+            completion: nil
+        )
+    }
+
+    func upDownAnimationView(
+        with viewElement: UIView,
+        durationUp: TimeInterval,
+        durationDown: TimeInterval,
+        positionUp: CGFloat,
+        completion: ((Bool) -> Void)? = nil
+    ) {
+        UIView.transition(
+            with: viewElement,
+            duration: durationUp,
+            options: .curveLinear,
+            animations: { [weak self] in if self != nil { viewElement.frame.origin.y -= positionUp }
+            }, completion: {_ in
+                UIView.transition(
+                    with: viewElement,
+                    duration: durationDown,
+                    options: .curveLinear,
+                    animations: {
+                        [weak self] in if self != nil {
+                            viewElement.frame.origin.y = UIScreen.main.bounds.maxY
+                        }
+                    }, completion: completion
+                )
+            }
+        )
+    }
+}

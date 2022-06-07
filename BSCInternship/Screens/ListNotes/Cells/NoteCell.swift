@@ -13,7 +13,7 @@ class NoteCell: UITableViewCell {
     // MARK: - Properties
 
     static let reuseId = String(describing: NoteCell.self)
-    var note: Note?
+    var note: NoteModel?
     // MARK: - UI Properties
 
     private let bgView: UIView = {
@@ -46,6 +46,7 @@ class NoteCell: UITableViewCell {
 
     private let userShareIconImageView: UIImageView = {
         let imageView = UIImageView()
+        imageView.alpha = Constants.alphaImageOnStart
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -68,6 +69,7 @@ class NoteCell: UITableViewCell {
         dateLabel.text = nil
         txtLabel.text = nil
         userShareIconImageView.image = nil
+        userShareIconImageView.alpha = Constants.alphaImageOnStart
     }
 
     override func layoutSubviews() {
@@ -76,7 +78,7 @@ class NoteCell: UITableViewCell {
     }
     // MARK: - Public methods
 
-    func set(with note: Note?) {
+    func set(with note: NoteModel?) {
         self.note = note
         updateData()
     }
@@ -106,9 +108,14 @@ private extension NoteCell {
         dateLabel.text = note?.date.toString(dateFormat: Constants.dateFormat)
         txtLabel.text = note?.text
         if let userShareIcon = note?.userShareIcon {
-            userShareIconImageView.loadFrom(URLAddress: userShareIcon)
+            self.userShareIconImageView.loadFrom(URLAddress: userShareIcon)
+            UIView.animate(
+                withDuration: Constants.durationOnShowing,
+                animations: { self.userShareIconImageView.alpha = Constants.alphaImageOnShow }
+            )
         } else {
             userShareIconImageView.image = nil
+            userShareIconImageView.alpha = Constants.alphaImageOnStart
         }
     }
 
@@ -235,5 +242,11 @@ extension NoteCell {
         // MARK: String constants
 
         static let dateFormat = "dd.MM.yyyy"
+
+        // MARK: Animate constants
+
+        static let alphaImageOnStart = 0.0
+        static let alphaImageOnShow = 1.0
+        static let durationOnShowing = 2.5
     }
 }
