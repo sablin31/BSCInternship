@@ -9,9 +9,11 @@
 import UIKit
 
 protocol ListNotesDisplayLogic: AnyObject {
+    var interactor: ListNotesInteractor? { get set }
+
     func showNotesInStorage(viewModel: ListNotesModel.GetNotesInStorage.ViewModel)
     func showNotesInWeb(viewModel: ListNotesModel.GetNotesInWeb.ViewModel)
-    func showAllNotice(viewModel: ListNotesModel.GetModel.ViewModel)
+    func showAllNotes(viewModel: ListNotesModel.GetModel.ViewModel)
     func showAllNotesAfterDelete(viewModel: ListNotesModel.DeleteNotes.ViewModel)
     func showAllNotesAfterSave(viewModel: ListNotesModel.SaveAllNotice.ViewModel)
 }
@@ -255,7 +257,7 @@ extension ListNotesViewController: ListNotesDisplayLogic {
         self.notesModel = viewModel.notesViewModel
     }
 
-    func showAllNotice(viewModel: ListNotesModel.GetModel.ViewModel) {
+    func showAllNotes(viewModel: ListNotesModel.GetModel.ViewModel) {
         self.notesModel = viewModel.notesViewModel
         tableView.reloadData()
     }
@@ -345,7 +347,7 @@ private extension ListNotesViewController {
             queue: nil
         ) { _ in
             let request = ListNotesModel.SaveAllNotice.Request(keyDataSource: Constants.keyDataSource)
-            self.interactor?.saveAllNotice(request: request)
+            self.interactor?.saveAllNotes(request: request)
         }
     }
 

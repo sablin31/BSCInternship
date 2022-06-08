@@ -28,6 +28,31 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "70FB3D26284F53AC00A38756"
+               BuildableName = "UnitTestTarget.xctest"
+               BlueprintName = "UnitTestTarget"
+               ReferencedContainer = "container:BSCInternship.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "70FB3D33284F64BB00A38756"
+               BuildableName = "BSCInternshipTests.xctest"
+               BlueprintName = "BSCInternshipTests"
+               ReferencedContainer = "container:BSCInternship.xcodeproj">
+            </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "ListNotesInteractorTests/testGetNotesInWeb()">
+               </Test>
+            </SkippedTests>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
