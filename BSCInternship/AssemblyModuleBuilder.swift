@@ -24,6 +24,10 @@ class AssemblyModuleBuilder: AssemblyBuilderProtocol {
         let view = ListNotesViewController()
         let interactor = ListNotesInteractor()
         let presenter = ListNotesPresenter()
+        let workerStorage = WorkerStorage()
+        let workerWeb = WorkerWeb()
+        interactor.workerStorage = workerStorage
+        interactor.workerWeb = workerWeb
         view.interactor = interactor
         view.router = router
         interactor.presenter = presenter

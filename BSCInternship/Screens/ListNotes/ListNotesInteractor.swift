@@ -9,10 +9,14 @@
 import Foundation
 
 protocol ListNotesBusinessLogic: AnyObject {
+    var presenter: ListNotesPresentationLogic? { get set }
+    var workerStorage: DataSourceServiceProtocol? { get set }
+    var workerWeb: NetworkServiceProtocol? { get set }
+
     func getNotesInStorage(request: ListNotesModel.GetNotesInStorage.Request)
     func getNotesInWeb(request: ListNotesModel.GetNotesInWeb.Request)
     func updateModel(request: ListNotesModel.GetModel.Request)
-    func saveAllNotice(request: ListNotesModel.SaveAllNotice.Request)
+    func saveAllNotes(request: ListNotesModel.SaveAllNotice.Request)
     func deleteNotes(request: ListNotesModel.DeleteNotes.Request)
 }
 
@@ -27,14 +31,12 @@ final class ListNotesInteractor: ListNotesBusinessLogic, ListNotesDataStore {
     var notesInDevice = [NoteModel]()
     var notesInWeb = [NoteResponceMo]()
     var presenter: ListNotesPresentationLogic?
-    // MARK: - Private properties
-
-    private let workerStorage = WorkerStorage()
-    private let workerWeb = WorkerWeb()
+    var workerStorage: DataSourceServiceProtocol?
+    var workerWeb: NetworkServiceProtocol?
     // MARK: - Public methods
 
     func getNotesInStorage(request: ListNotesModel.GetNotesInStorage.Request) {
-        notesInDevice = workerStorage.loadDate(key: request.keyDataSource) ?? []
+        notesInDevice = workerStorage?.loadDate(key: request.keyDataSource) ?? []
         let response = ListNotesModel.GetNotesInStorage.Response(
             notesInDevice: notesInDevice,
             notesInWeb: notesInWeb
@@ -43,7 +45,7 @@ final class ListNotesInteractor: ListNotesBusinessLogic, ListNotesDataStore {
     }
 
     func getNotesInWeb(request: ListNotesModel.GetNotesInWeb.Request) {
-        workerWeb.fetch(url: request.url) { [weak self] result in
+        workerWeb?.fetch(url: request.url) { [weak self] result in
             guard let self = self else { return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1 ) {
                 switch result {
@@ -80,13 +82,13 @@ final class ListNotesInteractor: ListNotesBusinessLogic, ListNotesDataStore {
             notesInDevice: notesInDevice,
             notesInWeb: notesInWeb
         )
-        self.presenter?.presentAllNotice(response: response)
+        self.presenter?.presentAllNotes(response: response)
     }
 
-    func saveAllNotice(request: ListNotesModel.SaveAllNotice.Request) {
-        workerStorage.save(notes: self.notesInDevice, key: request.keyDataSource)
+    func saveAllNotes(request: ListNotesModel.SaveAllNotice.Request) {
+        workerStorage?.save(notes: self.notesInDevice, key: request.keyDataSource)
         let response = ListNotesModel.SaveAllNotice.Response()
-        self.presenter?.presentAllSaveNotice(response: response)
+        self.presenter?.presentAllSaveNotes(response: response)
     }
 
     func deleteNotes(request: ListNotesModel.DeleteNotes.Request) {

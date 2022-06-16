@@ -9,10 +9,12 @@
 import Foundation
 
 protocol ListNotesPresentationLogic: AnyObject {
+    var viewController: ListNotesDisplayLogic? { get set }
+
     func presentNotesInStorage(response: ListNotesModel.GetNotesInStorage.Response)
     func presentNotesInWeb(response: ListNotesModel.GetNotesInWeb.Response)
-    func presentAllNotice(response: ListNotesModel.GetModel.Response)
-    func presentAllSaveNotice(response: ListNotesModel.SaveAllNotice.Response)
+    func presentAllNotes(response: ListNotesModel.GetModel.Response)
+    func presentAllSaveNotes(response: ListNotesModel.SaveAllNotice.Response)
     func presentNotesAfterDelete(response: ListNotesModel.DeleteNotes.Response)
 }
 
@@ -49,16 +51,16 @@ final class ListNotesPresenter: ListNotesPresentationLogic {
         viewController?.showAllNotesAfterDelete(viewModel: viewModel)
     }
 
-    func presentAllNotice(response: ListNotesModel.GetModel.Response) {
+    func presentAllNotes(response: ListNotesModel.GetModel.Response) {
         var notesViewModel = NotesViewModel()
 
         notesViewModel.notesInDevice = response.notesInDevice
         notesViewModel.notesInWeb = noteResponceMoArrayToNoteModelArray(response.notesInWeb)
         let viewModel = ListNotesModel.GetModel.ViewModel(notesViewModel: notesViewModel)
-        viewController?.showAllNotice(viewModel: viewModel)
+        viewController?.showAllNotes(viewModel: viewModel)
     }
 
-    func presentAllSaveNotice(response: ListNotesModel.SaveAllNotice.Response) {
+    func presentAllSaveNotes(response: ListNotesModel.SaveAllNotice.Response) {
         let viewModel = ListNotesModel.SaveAllNotice.ViewModel()
         viewController?.showAllNotesAfterSave(viewModel: viewModel)
     }
